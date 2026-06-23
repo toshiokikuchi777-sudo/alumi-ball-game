@@ -17,6 +17,7 @@ body {
 #game { position:relative; z-index:1; width:100%; max-width:430px; padding:12px 16px 30px; display:flex; flex-direction:column; align-items:center; gap:10px; }
 
 #phase-pill { font-size:10px; letter-spacing:2px; padding:4px 14px; border-radius:20px; border:1px solid rgba(255,255,255,.12); color:#cddcea; background:rgba(255,255,255,.04); text-transform:uppercase; transition:all .35s; }
+#phase-pill.crumple { border-color:rgba(200,205,215,.4); color:#e2e8f0; background:rgba(185,195,210,.1); }
 #phase-pill.forge { border-color:rgba(224,176,112,.4); color:#e8c088; background:rgba(200,140,70,.1); }
 #phase-pill.polish { border-color:rgba(140,200,250,.4); color:#a0d0f8; background:rgba(80,160,230,.1); }
 #phase-pill.done { border-color:rgba(180,255,200,.5); color:#b8ffc8; background:rgba(80,230,140,.12); }
@@ -105,8 +106,8 @@ body {
 
   <div id="meters">
     <div class="meter-row" id="round-row">
-      <div class="meter-ico">⚪</div><div class="meter-lbl">真球度</div>
-      <div class="meter-track"><div class="meter-fill" id="round-fill"></div><div class="meter-goal" style="left:85%"></div></div>
+      <div class="meter-ico" id="round-ico">🤏</div><div class="meter-lbl" id="round-lbl">丸まり</div>
+      <div class="meter-track"><div class="meter-fill" id="round-fill"></div><div class="meter-goal" id="round-goal" style="left:100%"></div></div>
       <div class="meter-pct" id="round-pct">0%</div>
     </div>
     <div class="meter-row dim" id="shine-row">
@@ -157,7 +158,7 @@ const $=id=>document.getElementById(id);
 // ════════════════════════════════════════════
 let G;
 function freshState(){
-  return { phase:'forge', pts:0, hits:0, rubs:0,
+  return { phase:'crumple', crumpleT:0, pts:0, hits:0, rubs:0,
     power:9, twin:false, autoHammer:0,
     gritIdx:0, brush:1, autoPolish:0,
     roundness:0, shine:0 };
@@ -184,7 +185,7 @@ const TOOLS=[
 // ════════════════════════════════════════════
 const view=$('view');
 let renderer, scene, camera, ball, geo, mat, wireMesh;
-let dirs, disp, disp0Mean, vertCount;
+let dirs, disp, disp0Mean, vertCount, flatX, flatY, flatZ, targetDisp;
 let roughCanvas, roughCtx, roughTex, sampleCanvas, sampleCtx;
 const raycaster=new THREE.Raycaster();
 const ndc=new THREE.Vector2();
@@ -223,6 +224,17 @@ function initThree(){
     const x=p.getX(i), y=p.getY(i), z=p.getZ(i);
     const l=Math.hypot(x,y,z)||1;
     dirs[i*3]=x/l; dirs[i*3+1]=y/l; dirs[i*3+2]=z/l;
+  }
+  // 平面（ペラペラのホイル）レイアウト：球面UVを長方形シートに展開
+  const uv=geo.attributes.uv;
+  flatX=new Float32Array(vertCount); flatY=new Float32Array(vertCount); flatZ=new Float32Array(vertCount);
+  targetDisp=new Float32Array(vertCount);
+  const SW=2.45, SH=1.85;
+  for(let i=0;i<vertCount;i++){
+    const u=uv.getX(i), v=uv.getY(i);
+    flatX[i]=(u-0.5)*SW;
+    flatY[i]=(v-0.5)*SH;
+    flatZ[i]=(Math.random()-0.5)*0.07; // 薄いしわ（ホイルの質感）
   }
   // 頂点カラー（出っ張り可視化用）
   geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(vertCount*3), 3));
@@ -290,9 +302,8 @@ function applyColors(){
   c.needsUpdate=true;
 }
 
-// ── くしゃくしゃ初期化 ──
-function initForge(){
-  // 複数のガウシアン出っ張りで滑らかな凹凸（全部外向き）
+// ── しわくちゃの凹凸（ガウシアン出っ張りの和）を生成 → targetDisp ──
+function genWrinkles(){
   const M=14;
   const bdir=[], bamp=[];
   for(let k=0;k<M;k++){
@@ -309,11 +320,60 @@ function initForge(){
       const ang=Math.acos(dot);
       d+=bamp[k]*Math.exp(-(ang*ang)/(2*0.55*0.55));
     }
-    disp[i]=d; sum+=d;
+    targetDisp[i]=d; sum+=d;
   }
   disp0Mean=sum/vertCount;
-  recalcRound();
-  applyShape(); applyColors();
+}
+
+// ── 丸めフェーズ：平面 ⇄ しわくちゃ球 を crumpleT で補間 ──
+function applyCrumpleShape(){
+  const p=geo.attributes.position;
+  const t=G.crumpleT, e=t*t*(3-2*t); // smoothstep
+  for(let i=0;i<vertCount;i++){
+    const r=RBASE+targetDisp[i]*t;
+    const sx=dirs[i*3]*r, sy=dirs[i*3+1]*r, sz=dirs[i*3+2]*r;
+    p.setXYZ(i, lerp(flatX[i],sx,e), lerp(flatY[i],sy,e), lerp(flatZ[i],sz,e));
+  }
+  p.needsUpdate=true; geo.computeVertexNormals();
+}
+function initCrumple(){
+  genWrinkles();
+  G.crumpleT=0;
+  for(let i=0;i<vertCount;i++) disp[i]=0;
+  applyCrumpleShape(); applyColors();
+}
+function crumpleStep(vx,vy){
+  G.crumpleT=Math.min(1, G.crumpleT+0.14);
+  // 丸めるたびに少しランダムなしわを足す（くしゃくしゃ感）
+  const M=3;
+  for(let m=0;m<M;m++){
+    const u=Math.random()*2-1, th=Math.random()*Math.PI*2, s=Math.sqrt(1-u*u);
+    const bx=s*Math.cos(th), by=s*Math.sin(th), bz=u, amp=0.03+Math.random()*0.05;
+    for(let i=0;i<vertCount;i+=2){
+      const dot=clamp(dirs[i*3]*bx+dirs[i*3+1]*by+dirs[i*3+2]*bz,-1,1);
+      const ang=Math.acos(dot);
+      targetDisp[i]+=amp*Math.exp(-(ang*ang)/(2*0.5*0.5));
+    }
+  }
+  G.pts+=3;
+  applyCrumpleShape();
+  punch=1; spinKick+=(Math.random()*2-1)*0.4;
+  sfxCrinkle();
+  fxSparks(vx,vy,['#c9d2db','#aeb8c2','#e8eef4'],6);
+  fxText(vx,vy,'くしゃっ','#cbd6e2');
+  if(G.crumpleT>=1) enterForge();
+  refreshUI();
+}
+function enterForge(){
+  G.phase='forge';
+  let sum=0; for(let i=0;i<vertCount;i++){ disp[i]=targetDisp[i]; sum+=Math.abs(targetDisp[i]); }
+  disp0Mean=sum/vertCount;
+  applyShape(); applyColors(); recalcRound();
+  banner('叩いて真球へ',' FORGE PHASE ');
+  $('phase-pill').className='forge'; $('phase-pill').textContent='🔨 叩いて球にする';
+  $('hint').textContent='出っ張りをタップして叩く';
+  $('round-ico').textContent='⚪'; $('round-lbl').textContent='真球度'; $('round-goal').style.left='85%';
+  refreshUI();
 }
 function recalcRound(){
   let s=0; for(let i=0;i<vertCount;i++) s+=Math.abs(disp[i]);
@@ -489,7 +549,10 @@ view.addEventListener('pointermove', e=>{
 });
 window.addEventListener('pointerup', e=>{
   if(!pointerDown){ return; } pointerDown=false;
-  if(G.phase==='forge' && !moved){
+  if(G.phase==='crumple' && !moved){
+    const [vx,vy]=viewXY(e); crumpleStep(vx,vy);
+  }
+  else if(G.phase==='forge' && !moved){
     setNdc(e); const h=rayHit();
     if(h){
       _lp.copy(h.point); ball.worldToLocal(_lp); _lp.normalize();
@@ -577,6 +640,17 @@ function sfxShine(){ if(!actx) return;
     g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.05,t0+.02); g.gain.exponentialRampToValueAtTime(.001,t0+.4);
     o.start(t0); o.stop(t0+.45); });
 }
+function sfxCrinkle(){ if(!actx) return;
+  const dur=0.2, sr=actx.sampleRate;
+  const buf=actx.createBuffer(1, Math.floor(sr*dur), sr);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,1.4);
+  const src=actx.createBufferSource(); src.buffer=buf;
+  const f=actx.createBiquadFilter(); f.type='highpass'; f.frequency.value=2600;
+  const g=actx.createGain(); g.gain.value=0.09;
+  src.connect(f); f.connect(g); g.connect(actx.destination);
+  src.start();
+}
 
 // ════════════════════════════════════════════
 //  HTML EFFECTS
@@ -596,7 +670,7 @@ function buildTools(){
   for(const t of sorted){
     if(!t.can()) continue;
     const cost=toolCost(t);
-    const irrelevant=(G.phase==='forge'&&t.tag==='polish')||(G.phase==='polish'&&t.tag==='forge')||G.phase==='done';
+    const irrelevant=G.phase==='crumple'||(G.phase==='forge'&&t.tag==='polish')||(G.phase==='polish'&&t.tag==='forge')||G.phase==='done';
     const locked=G.pts<cost;
     const row=document.createElement('div');
     row.className='tool'+(locked?' locked':'')+(irrelevant?' off':'');
@@ -612,10 +686,19 @@ function buildTools(){
 // ════════════════════════════════════════════
 const NAMES_FORGE=[[0,'くしゃくしゃのアルミ'],[0.3,'でこぼこの塊'],[0.5,'だんだん丸く'],[0.7,'いい球になってきた'],[0.82,'あと少しで真球！']];
 const NAMES_POLISH=[[0,'くすんだ金属の玉'],[0.3,'ムラが減ってきた'],[0.55,'うっすら光沢が'],[0.78,'かなりピカピカ'],[0.92,'もう少しで鏡面！']];
-function stageName(){ if(G.phase==='done') return '鏡面アルミ玉 ✦'; const arr=G.phase==='forge'?NAMES_FORGE:NAMES_POLISH; const v=G.phase==='forge'?G.roundness:G.shine; let nm=arr[0][1]; for(const [t,n] of arr) if(v>=t) nm=n; return nm; }
+const NAMES_CRUMPLE=[[0,'ペラペラのアルミホイル'],[0.2,'端を折り込む'],[0.45,'丸めていく'],[0.7,'かたまってきた'],[0.9,'しわくちゃの球！']];
+function stageName(){
+  if(G.phase==='done') return '鏡面アルミ玉 ✦';
+  let arr,v;
+  if(G.phase==='crumple'){ arr=NAMES_CRUMPLE; v=G.crumpleT; }
+  else if(G.phase==='forge'){ arr=NAMES_FORGE; v=G.roundness; }
+  else { arr=NAMES_POLISH; v=G.shine; }
+  let nm=arr[0][1]; for(const [t,n] of arr) if(v>=t) nm=n; return nm;
+}
 function refreshUI(){
   $('pts-val').textContent=fmt(G.pts);
-  $('round-fill').style.width=(G.roundness*100)+'%'; $('round-pct').textContent=Math.round(G.roundness*100)+'%';
+  const rv = G.phase==='crumple' ? G.crumpleT : G.roundness;
+  $('round-fill').style.width=(rv*100)+'%'; $('round-pct').textContent=Math.round(rv*100)+'%';
   $('shine-fill').style.width=(G.shine*100)+'%'; $('shine-pct').textContent=Math.round(G.shine*100)+'%';
   $('stage-name').textContent=stageName();
   refreshToolsState();
@@ -633,8 +716,14 @@ function animate(now){
   const dt=Math.min((now-lastT)/1000,.05); lastT=now;
   // 自動回転（全方向を見せる）＋叩き反応
   if(ball){
-    ball.rotation.y += dt*(G.phase==='done'?0.5:0.3) + spinKick*dt*4;
-    ball.rotation.x = Math.sin(now*0.0003)*0.12;
+    if(G.phase==='crumple'){
+      // 平面〜丸めフェーズ：シートを見せるため正面付近で軽く揺らす
+      ball.rotation.y = Math.sin(now*0.0004)*0.32 + spinKick*0.3;
+      ball.rotation.x = 0.12 + Math.sin(now*0.00033)*0.08;
+    } else {
+      ball.rotation.y += dt*(G.phase==='done'?0.5:0.3) + spinKick*dt*4;
+      ball.rotation.x = Math.sin(now*0.0003)*0.12;
+    }
     spinKick*=Math.pow(0.02,dt);
     const sq=1-punch*0.06;
     ball.scale.set(1+punch*0.04, sq, 1+punch*0.04);
@@ -649,12 +738,13 @@ function animate(now){
 // ════════════════════════════════════════════
 function start(){
   G=freshState();
-  if(mat){ mat.vertexColors=true; mat.color.set(0xffffff); mat.metalness=0.75; mat.roughness=0.62; mat.roughnessMap=null; mat.needsUpdate=true; }
-  initForge();
-  $('phase-pill').className='forge'; $('phase-pill').textContent='🔨 叩いて球にする';
-  $('hint').textContent='出っ張りをタップして叩く';
+  if(mat){ mat.vertexColors=true; mat.color.set(0xffffff); mat.metalness=0.62; mat.roughness=0.5; mat.roughnessMap=null; mat.envMapIntensity=1.1; mat.needsUpdate=true; }
+  initCrumple();
+  $('phase-pill').className='crumple'; $('phase-pill').textContent='🤏 平面を丸める';
+  $('hint').textContent='タップして紙を丸める';
+  $('round-ico').textContent='🤏'; $('round-lbl').textContent='丸まり'; $('round-goal').style.left='100%';
   $('round-row').classList.remove('dim'); $('shine-row').classList.add('dim');
-  $('tools-title').textContent='TOOLS — 叩き道具';
+  $('tools-title').textContent='TOOLS';
   $('finale').className=''; lastSig='';
   buildTools(); refreshUI();
 }
