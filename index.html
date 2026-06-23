@@ -3,168 +3,119 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>アルミ玉 -鏡面への道-</title>
+<title>アルミ玉 3D -鏡面への道-</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:none; }
-html,body { overscroll-behavior:none; }
-
+html,body { overscroll-behavior:none; background:#0a0c10; }
 body {
-  background:#0d0f13;
-  min-height:100vh;
-  display:flex; flex-direction:column; align-items:center;
+  min-height:100vh; display:flex; flex-direction:column; align-items:center;
   font-family:'Hiragino Kaku Gothic ProN','Meiryo',sans-serif;
-  overflow-x:hidden; user-select:none;
+  overflow-x:hidden; user-select:none; color:#fff;
 }
-.bg-grid {
-  position:fixed; inset:0; z-index:0;
-  background:
-    radial-gradient(ellipse at 50% 25%, #1a1f26 0%, #0a0c10 70%),
-    linear-gradient(rgba(160,180,200,.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(160,180,200,.022) 1px, transparent 1px);
-  background-size:auto, 30px 30px, 30px 30px;
-}
+.bg { position:fixed; inset:0; z-index:0; background:radial-gradient(ellipse at 50% 30%, #161b22 0%, #08090d 75%); }
 
-#game {
-  position:relative; z-index:1;
-  width:100%; max-width:420px;
-  padding:14px 16px 32px;
-  display:flex; flex-direction:column; align-items:center; gap:11px;
-}
+#game { position:relative; z-index:1; width:100%; max-width:430px; padding:12px 16px 30px; display:flex; flex-direction:column; align-items:center; gap:10px; }
 
-/* タイトル */
-#stage-name {
-  font-size:18px; font-weight:700; letter-spacing:1.5px;
-  background:linear-gradient(135deg,#b8cce0,#eef6ff,#c8daf0);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  text-align:center; min-height:26px; transition:all .35s;
-}
-
-/* メーター2本 */
-#meters { width:100%; display:flex; flex-direction:column; gap:7px; }
-.meter-row { display:flex; align-items:center; gap:8px; }
-.meter-ico { font-size:14px; width:20px; text-align:center; }
-.meter-lbl { font-size:10px; color:rgba(255,255,255,.4); width:48px; letter-spacing:.5px; }
-.meter-track {
-  flex:1; height:9px; background:rgba(255,255,255,.06);
-  border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,.07);
-  position:relative;
-}
-.meter-fill { height:100%; width:0%; border-radius:6px; transition:width .25s; }
-#round-fill { background:linear-gradient(90deg,#c08040,#e0b070,#f0d8a0); box-shadow:0 0 7px rgba(224,176,112,.5); }
-#shine-fill { background:linear-gradient(90deg,#4a78a8,#80c0e8,#e0f4ff); box-shadow:0 0 7px rgba(160,210,250,.5); }
-.meter-pct { font-size:11px; font-weight:700; width:38px; text-align:right; }
-#round-pct { color:#e0b070; }
-#shine-pct { color:#90c8f0; }
-.meter-row.dim { opacity:.32; }
-.meter-row.dim .meter-fill { transition:width .25s; }
-/* 目標ライン */
-.meter-goal { position:absolute; top:-2px; bottom:-2px; width:2px; background:rgba(255,255,255,.45); }
-
-/* フェーズ表示 */
-#phase-pill {
-  font-size:10px; letter-spacing:2px; padding:4px 14px; border-radius:20px;
-  border:1px solid rgba(255,255,255,.12); color:#cddcea;
-  background:rgba(255,255,255,.04); text-transform:uppercase;
-  transition:all .35s;
-}
+#phase-pill { font-size:10px; letter-spacing:2px; padding:4px 14px; border-radius:20px; border:1px solid rgba(255,255,255,.12); color:#cddcea; background:rgba(255,255,255,.04); text-transform:uppercase; transition:all .35s; }
 #phase-pill.forge { border-color:rgba(224,176,112,.4); color:#e8c088; background:rgba(200,140,70,.1); }
 #phase-pill.polish { border-color:rgba(140,200,250,.4); color:#a0d0f8; background:rgba(80,160,230,.1); }
 #phase-pill.done { border-color:rgba(180,255,200,.5); color:#b8ffc8; background:rgba(80,230,140,.12); }
 
-/* ボール */
-#ball-wrap { position:relative; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-#ball-canvas { filter:drop-shadow(0 10px 28px rgba(0,0,0,.6)); }
-#hint {
-  position:absolute; bottom:-2px; width:100%; text-align:center;
-  font-size:10px; color:rgba(255,255,255,.22); letter-spacing:2px; pointer-events:none;
-  animation:blink 2.2s ease-in-out infinite;
-}
-@keyframes blink { 0%,100%{opacity:.3} 50%{opacity:.75} }
+#stage-name { font-size:17px; font-weight:700; letter-spacing:1px; background:linear-gradient(135deg,#b8cce0,#eef6ff,#c8daf0); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-align:center; min-height:24px; transition:all .35s; }
 
-/* エフェクト */
-.fx { position:absolute; pointer-events:none; }
-.fx-txt { font-size:15px; font-weight:700; text-shadow:0 0 8px rgba(0,0,0,.6); animation:fxUp .8s ease-out forwards; white-space:nowrap; }
-@keyframes fxUp { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-52px) scale(.7)} }
+#meters { width:100%; display:flex; flex-direction:column; gap:6px; }
+.meter-row { display:flex; align-items:center; gap:8px; }
+.meter-ico { font-size:13px; width:18px; text-align:center; }
+.meter-lbl { font-size:10px; color:rgba(255,255,255,.4); width:46px; }
+.meter-track { flex:1; height:9px; background:rgba(255,255,255,.06); border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,.07); position:relative; }
+.meter-fill { height:100%; width:0%; border-radius:6px; transition:width .25s; }
+#round-fill { background:linear-gradient(90deg,#c08040,#e0b070,#f0d8a0); box-shadow:0 0 7px rgba(224,176,112,.5); }
+#shine-fill { background:linear-gradient(90deg,#4a78a8,#80c0e8,#e0f4ff); box-shadow:0 0 7px rgba(160,210,250,.5); }
+.meter-pct { font-size:11px; font-weight:700; width:36px; text-align:right; }
+#round-pct { color:#e0b070; } #shine-pct { color:#90c8f0; }
+.meter-row.dim { opacity:.3; }
+.meter-goal { position:absolute; top:-2px; bottom:-2px; width:2px; background:rgba(255,255,255,.45); }
+
+#view { position:relative; width:100%; aspect-ratio:1/1; max-width:360px; border-radius:18px; overflow:hidden; background:radial-gradient(ellipse at 50% 40%, #1c2230, #0a0d12); box-shadow:inset 0 0 60px rgba(0,0,0,.6); cursor:pointer; }
+#view canvas { display:block; width:100%; height:100%; }
+#hint { position:absolute; bottom:8px; width:100%; text-align:center; font-size:10px; color:rgba(255,255,255,.3); letter-spacing:2px; pointer-events:none; animation:blink 2.2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:.35} 50%{opacity:.8} }
+#loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:rgba(255,255,255,.4); letter-spacing:2px; }
+
+.fx { position:absolute; pointer-events:none; z-index:5; }
+.fx-txt { font-size:15px; font-weight:700; text-shadow:0 0 8px rgba(0,0,0,.7); animation:fxUp .8s ease-out forwards; white-space:nowrap; }
+@keyframes fxUp { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-48px) scale(.7)} }
 .fx-ring { border-radius:50%; border:2px solid; animation:fxRing .5s ease-out forwards; }
-@keyframes fxRing { 0%{opacity:.9;transform:translate(-50%,-50%) scale(.3)} 100%{opacity:0;transform:translate(-50%,-50%) scale(1.6)} }
+@keyframes fxRing { 0%{opacity:.9;transform:translate(-50%,-50%) scale(.3)} 100%{opacity:0;transform:translate(-50%,-50%) scale(1.7)} }
 .spark { border-radius:50%; animation:sparkFly .6s ease-out forwards; }
 @keyframes sparkFly { 0%{opacity:1;transform:translate(0,0) scale(1)} 100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.05)} }
 
-/* ポイント */
 #pts-row { font-size:12px; color:rgba(255,255,255,.5); display:flex; align-items:center; gap:5px; }
 #pts-val { font-size:16px; font-weight:700; color:#cfe0f0; }
 
-/* ツール */
 #tools-title { width:100%; font-size:9px; letter-spacing:2.5px; color:rgba(255,255,255,.2); text-transform:uppercase; padding-left:2px; transition:color .3s; }
 #tools { width:100%; display:flex; flex-direction:column; gap:6px; }
-.tool {
-  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);
-  border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:10px;
-  cursor:pointer; transition:background .15s,border-color .15s,opacity .25s;
-}
+.tool { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:9px 12px; display:flex; align-items:center; gap:10px; cursor:pointer; transition:background .15s,border-color .15s,opacity .25s; }
 .tool:hover:not(.locked):not(.off) { background:rgba(120,170,220,.1); border-color:rgba(130,180,230,.3); }
 .tool.locked { opacity:.3; cursor:not-allowed; }
-.tool.off { opacity:.4; }
-.tool-ico { font-size:19px; flex-shrink:0; width:24px; text-align:center; }
+.tool.off { opacity:.38; }
+.tool-ico { font-size:18px; width:22px; text-align:center; flex-shrink:0; }
 .tool-info { flex:1; }
-.tool-name { font-size:12.5px; font-weight:700; color:#c2d8ee; }
+.tool-name { font-size:12px; font-weight:700; color:#c2d8ee; }
 .tool-desc { font-size:10px; color:rgba(255,255,255,.32); margin-top:1px; }
 .tool-cost { font-size:11px; font-weight:700; color:#82b2da; white-space:nowrap; }
 .tool-tag { font-size:8px; padding:1px 5px; border-radius:8px; margin-left:4px; vertical-align:middle; }
 .tag-forge { background:rgba(200,140,70,.18); color:#e8b878; }
 .tag-polish { background:rgba(90,160,230,.18); color:#9cc8f0; }
 
-/* バナー */
 #banner { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:100; pointer-events:none; opacity:0; }
 #banner.show { animation:bannerAnim 2.6s ease-out forwards; }
 @keyframes bannerAnim { 0%{opacity:0} 12%{opacity:1} 72%{opacity:1} 100%{opacity:0} }
-#banner-inner { text-align:center; padding:24px 42px; background:rgba(8,11,16,.9); border-radius:18px; border:1px solid rgba(140,190,230,.35); box-shadow:0 0 50px rgba(80,160,230,.18); }
+#banner-inner { text-align:center; padding:22px 40px; background:rgba(8,11,16,.9); border-radius:18px; border:1px solid rgba(140,190,230,.35); box-shadow:0 0 50px rgba(80,160,230,.18); }
 #banner-sub { font-size:10px; letter-spacing:4px; color:rgba(160,210,250,.5); text-transform:uppercase; margin-bottom:7px; }
-#banner-txt { font-size:25px; font-weight:700; letter-spacing:2px; color:#ddeeff; text-shadow:0 0 20px rgba(120,200,255,.7); }
+#banner-txt { font-size:24px; font-weight:700; letter-spacing:2px; color:#ddeeff; text-shadow:0 0 20px rgba(120,200,255,.7); }
 
-/* 完成モーダル */
-#finale { position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; background:rgba(5,8,12,.82); backdrop-filter:blur(3px); }
+#finale { position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; background:rgba(5,8,12,.85); backdrop-filter:blur(3px); }
 #finale.show { display:flex; animation:fadeIn .5s ease; }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-#finale-card {
-  text-align:center; padding:30px 34px; max-width:330px;
-  background:linear-gradient(160deg, rgba(30,40,55,.95), rgba(15,20,30,.95));
-  border-radius:22px; border:1px solid rgba(160,210,250,.3);
-  box-shadow:0 0 60px rgba(100,180,250,.25);
-}
-#finale-rank { font-size:64px; font-weight:800; line-height:1; margin:6px 0 4px; text-shadow:0 0 30px currentColor; }
-#finale-title { font-size:15px; color:#cfe0f0; letter-spacing:2px; margin-bottom:14px; }
+#finale-card { text-align:center; padding:28px 32px; max-width:320px; background:linear-gradient(160deg, rgba(30,40,55,.95), rgba(15,20,30,.95)); border-radius:22px; border:1px solid rgba(160,210,250,.3); box-shadow:0 0 60px rgba(100,180,250,.25); }
+#finale-rank { font-size:62px; font-weight:800; line-height:1; margin:6px 0 4px; text-shadow:0 0 30px currentColor; }
+#finale-title { font-size:14px; color:#cfe0f0; letter-spacing:2px; margin-bottom:14px; }
 .finale-stat { display:flex; justify-content:space-between; font-size:13px; color:rgba(255,255,255,.6); padding:5px 0; border-bottom:1px solid rgba(255,255,255,.08); }
 .finale-stat b { color:#e0f0ff; }
 #finale-btn { margin-top:18px; padding:11px 28px; border:none; border-radius:12px; background:linear-gradient(135deg,#4a90d0,#6ab0e0); color:#fff; font-size:13px; font-weight:700; letter-spacing:1px; cursor:pointer; }
 #finale-btn:active { transform:scale(.96); }
 </style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
 </head>
 <body>
-<div class="bg-grid"></div>
+<div class="bg"></div>
 
 <div id="game">
   <div id="phase-pill" class="forge">🔨 叩いて球にする</div>
-  <div id="stage-name">くしゃくしゃのアルミホイル</div>
+  <div id="stage-name">くしゃくしゃのアルミ</div>
 
   <div id="meters">
     <div class="meter-row" id="round-row">
-      <div class="meter-ico">⚪</div>
-      <div class="meter-lbl">真球度</div>
-      <div class="meter-track"><div class="meter-fill" id="round-fill"></div><div class="meter-goal" id="round-goal" style="left:85%"></div></div>
+      <div class="meter-ico">⚪</div><div class="meter-lbl">真球度</div>
+      <div class="meter-track"><div class="meter-fill" id="round-fill"></div><div class="meter-goal" style="left:85%"></div></div>
       <div class="meter-pct" id="round-pct">0%</div>
     </div>
     <div class="meter-row dim" id="shine-row">
-      <div class="meter-ico">✨</div>
-      <div class="meter-lbl">鏡面度</div>
-      <div class="meter-track"><div class="meter-fill" id="shine-fill"></div><div class="meter-goal" id="shine-goal" style="left:98%"></div></div>
+      <div class="meter-ico">✨</div><div class="meter-lbl">鏡面度</div>
+      <div class="meter-track"><div class="meter-fill" id="shine-fill"></div><div class="meter-goal" style="left:97%"></div></div>
       <div class="meter-pct" id="shine-pct">0%</div>
     </div>
   </div>
 
-  <div id="ball-wrap">
-    <canvas id="ball-canvas" width="250" height="250"></canvas>
-    <div id="hint">出っ張りを狙ってタップ</div>
+  <div id="view">
+    <div id="loading">3D読み込み中…</div>
+    <div id="hint">出っ張りをタップして叩く</div>
   </div>
 
   <div id="pts-row">🔩 <span id="pts-val">0</span> <span style="opacity:.5">pt</span></div>
@@ -186,497 +137,259 @@ body {
   <button id="finale-btn">もう一度作る</button>
 </div></div>
 
-<script>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
 // ════════════════════════════════════════════
 //  UTILS
 // ════════════════════════════════════════════
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
-const easeOut=t=>1-Math.pow(1-t,3);
-const TAU=Math.PI*2;
-function angDiff(a,b){ let d=Math.abs(a-b)%TAU; return d>Math.PI?TAU-d:d; }
-const NOISE=Array.from({length:512},()=>Math.random());
-const ns=i=>NOISE[((Math.abs(Math.floor(i))%512)+512)%512];
+const $=id=>document.getElementById(id);
 
 // ════════════════════════════════════════════
-//  STATE
+//  GAME STATE
 // ════════════════════════════════════════════
 let G;
 function freshState(){
-  return {
-    phase:'forge',          // forge → polish → done
-    pts:0,
-    hits:0, rubs:0,
-    // FORGE
-    bumps:[],               // {ang, mag}  mag>0=出っ張り(外), <0=凹み(内)
-    bump0:1,                // 初期歪み総量（真球度の基準）
-    power:8,                // 叩き威力
-    twin:false,             // 1タップ2発
-    autoHammer:0,           // 自動ハンマー強度
-    roundness:0,
-    // POLISH
-    smudges:[],             // {x,y,r,a}  表面の曇り（円内ローカル座標）
-    smudge0:1,
-    gritIdx:0,              // やすり番手
-    brush:1,               // 磨き範囲倍率
-    autoPolish:0,
-    shine:0,
-  };
+  return { phase:'forge', pts:0, hits:0, rubs:0,
+    power:9, twin:false, autoHammer:0,
+    gritIdx:0, brush:1, autoPolish:0,
+    roundness:0, shine:0 };
+}
+const GRITS=[
+  { name:'#120 粗目',  lum:138, speed:0.55 },
+  { name:'#400 中目',  lum:172, speed:0.5  },
+  { name:'#1000 細目', lum:206, speed:0.45 },
+  { name:'#3000 仕上', lum:234, speed:0.4  },
+  { name:'ピカール',   lum:255, speed:0.38 },
+];
+
+const TOOLS=[
+  { id:'pw', tag:'forge', ico:'🔨', name:'重いハンマー', desc:'叩く威力 +6', base:45, mult:1.5, can:()=>true, buy(){ G.power+=6; } },
+  { id:'tw', tag:'forge', ico:'🙌', name:'両手叩き', desc:'1タップで2連打', base:220, mult:1, once:true, can:()=>!G.twin, buy(){ G.twin=true; } },
+  { id:'ah', tag:'forge', ico:'⚙️', name:'自動ハンマー機', desc:'出っ張りを自動で叩く', base:130, mult:1.7, can:()=>true, buy(){ G.autoHammer+=1; } },
+  { id:'gr', tag:'polish', ico:'📄', name:'番手を上げる', desc:()=>G.gritIdx>=GRITS.length-1?'最高番手':`→ ${GRITS[G.gritIdx+1].name}`, base:90, mult:2.3, can:()=>G.gritIdx<GRITS.length-1, buy(){ G.gritIdx++; } },
+  { id:'br', tag:'polish', ico:'🧽', name:'大きい当て布', desc:'磨き範囲 +40%', base:110, mult:1.6, can:()=>true, buy(){ G.brush+=0.4; } },
+  { id:'ap', tag:'polish', ico:'🌀', name:'自動ポリッシャー', desc:'表面を自動で磨く', base:170, mult:1.7, can:()=>true, buy(){ G.autoPolish+=1; } },
+];
+
+// ════════════════════════════════════════════
+//  THREE.JS SETUP
+// ════════════════════════════════════════════
+const view=$('view');
+let renderer, scene, camera, ball, geo, mat;
+let dirs, disp, disp0Mean, vertCount;
+let roughCanvas, roughCtx, roughTex, sampleCanvas, sampleCtx;
+const raycaster=new THREE.Raycaster();
+const ndc=new THREE.Vector2();
+let punch=0, spinKick=0;            // 叩き反応
+const SEG=112, RBASE=1;
+
+function initThree(){
+  renderer=new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+  resizeRenderer();
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.05;
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  view.appendChild(renderer.domElement);
+
+  scene=new THREE.Scene();
+  camera=new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(0,0,3.3);
+
+  // 環境マップ（部屋＝金属に映り込む）
+  const pmrem=new THREE.PMREMGenerator(renderer);
+  scene.environment=pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  // ライト（鋭いハイライト用）
+  const key=new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(2,3,4); scene.add(key);
+  const rim=new THREE.DirectionalLight(0x88bbff, 1.1); rim.position.set(-3,-1,-2); scene.add(rim);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+  // ジオメトリ
+  geo=new THREE.SphereGeometry(RBASE, SEG, SEG);
+  vertCount=geo.attributes.position.count;
+  dirs=new Float32Array(vertCount*3);
+  disp=new Float32Array(vertCount);
+  const p=geo.attributes.position;
+  for(let i=0;i<vertCount;i++){
+    const x=p.getX(i), y=p.getY(i), z=p.getZ(i);
+    const l=Math.hypot(x,y,z)||1;
+    dirs[i*3]=x/l; dirs[i*3+1]=y/l; dirs[i*3+2]=z/l;
+  }
+  // 頂点カラー（出っ張り可視化用）
+  geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(vertCount*3), 3));
+
+  // 曇り→鏡面 用 roughnessMap
+  roughCanvas=document.createElement('canvas'); roughCanvas.width=1024; roughCanvas.height=512;
+  roughCtx=roughCanvas.getContext('2d');
+  sampleCanvas=document.createElement('canvas'); sampleCanvas.width=96; sampleCanvas.height=48;
+  sampleCtx=sampleCanvas.getContext('2d');
+  roughTex=new THREE.CanvasTexture(roughCanvas);
+  roughTex.colorSpace=THREE.NoColorSpace;
+
+  mat=new THREE.MeshStandardMaterial({
+    color:0xffffff, metalness:0.75, roughness:0.62,
+    vertexColors:true, envMapIntensity:1.1,
+  });
+  ball=new THREE.Mesh(geo, mat);
+  scene.add(ball);
+
+  window.addEventListener('resize', resizeRenderer);
+  $('loading').style.display='none';
+}
+function resizeRenderer(){
+  const w=view.clientWidth, h=view.clientHeight;
+  renderer.setSize(w,h,false);
+  if(camera){ camera.aspect=w/h; camera.updateProjectionMatrix(); }
 }
 
-// やすり番手：低いほど削り速いが residual(曇り残り)が大きい。高番手で鏡面到達。
-const GRITS=[
-  { name:'#120 粗目',  speed:0.9, residual:0.45 },
-  { name:'#400 中目',  speed:0.7, residual:0.25 },
-  { name:'#1000 細目', speed:0.55,residual:0.10 },
-  { name:'#3000 仕上', speed:0.45,residual:0.03 },
-  { name:'ピカール',   speed:0.4, residual:0.00 },
-];
-
-// ════════════════════════════════════════════
-//  TOOLS（アップグレード）
-// ════════════════════════════════════════════
-const TOOLS=[
-  // 叩き
-  { id:'pw',  tag:'forge', ico:'🔨', name:'重いハンマー',   desc:'叩く威力 +5',          base:40,  mult:1.5,
-    can:()=>true, buy(){ G.power+=5; } },
-  { id:'tw',  tag:'forge', ico:'🙌', name:'両手叩き',       desc:'1タップで2連打',        base:200, mult:1, once:true,
-    can:()=>!G.twin, buy(){ G.twin=true; } },
-  { id:'ah',  tag:'forge', ico:'⚙️', name:'自動ハンマー機',  desc:'歪みを自動で少し叩く',   base:120, mult:1.7,
-    can:()=>true, buy(){ G.autoHammer+=1; } },
-  // 磨き
-  { id:'gr',  tag:'polish',ico:'📄', name:'番手を上げる',    desc:()=>G.gritIdx>=GRITS.length-1?'最高番手':`→ ${GRITS[G.gritIdx+1].name}`, base:80, mult:2.2,
-    can:()=>G.gritIdx<GRITS.length-1, buy(){ G.gritIdx++; } },
-  { id:'br',  tag:'polish',ico:'🧽', name:'大きい当て布',    desc:'磨き範囲 +40%',         base:100, mult:1.6,
-    can:()=>true, buy(){ G.brush+=0.4; } },
-  { id:'ap',  tag:'polish',ico:'🌀', name:'自動ポリッシャー', desc:'表面を自動で磨く',      base:160, mult:1.7,
-    can:()=>true, buy(){ G.autoPolish+=1; } },
-];
-
-// ════════════════════════════════════════════
-//  CANVAS
-// ════════════════════════════════════════════
-const cv=document.getElementById('ball-canvas');
-const ctx=cv.getContext('2d');
-const CW=250,CH=250,CX=125,CY=120,R=88;
-let animT=0;
-// クリック反応物理
-let pulse=0,pVel=0, spin=0,spinVel=0, tilt=0,tiltVel=0;
-
-// ════════════════════════════════════════════
-//  INIT FORGE — くしゃくしゃの歪みを生成
-// ════════════════════════════════════════════
-function initForge(){
-  G.bumps=[];
-  const N=10;
-  let tot=0;
-  for(let i=0;i<N;i++){
-    const ang=(i/N)*TAU + (ns(i*3.7)-0.5)*0.4;
-    const mag=0.35+ns(i*7.1)*0.65; // すべて外向きの出っ張り（叩いて潰せる）
-    G.bumps.push({ang, mag});
-    tot+=Math.abs(mag);
+// ── 形状適用 ──
+function applyShape(){
+  const p=geo.attributes.position;
+  for(let i=0;i<vertCount;i++){
+    const r=RBASE+disp[i];
+    p.setXYZ(i, dirs[i*3]*r, dirs[i*3+1]*r, dirs[i*3+2]*r);
   }
-  G.bump0=tot;
+  p.needsUpdate=true;
+  geo.computeVertexNormals();
+}
+// ── 頂点カラー（出っ張りをオレンジに）──
+const C_SIL=[0.82,0.84,0.88], C_HOT=[1.0,0.5,0.15];
+function applyColors(){
+  const c=geo.attributes.color;
+  for(let i=0;i<vertCount;i++){
+    let t = G.phase==='forge' ? clamp(disp[i]/0.16,0,1) : 0;
+    c.setXYZ(i, lerp(C_SIL[0],C_HOT[0],t*0.85), lerp(C_SIL[1],C_HOT[1],t*0.85), lerp(C_SIL[2],C_HOT[2],t*0.85));
+  }
+  c.needsUpdate=true;
+}
+
+// ── くしゃくしゃ初期化 ──
+function initForge(){
+  // 複数のガウシアン出っ張りで滑らかな凹凸（全部外向き）
+  const M=14;
+  const bdir=[], bamp=[];
+  for(let k=0;k<M;k++){
+    const u=Math.random()*2-1, th=Math.random()*Math.PI*2, s=Math.sqrt(1-u*u);
+    bdir.push([s*Math.cos(th), s*Math.sin(th), u]);
+    bamp.push(0.06+Math.random()*0.14);
+  }
+  let sum=0;
+  for(let i=0;i<vertCount;i++){
+    let d=0;
+    const dx=dirs[i*3],dy=dirs[i*3+1],dz=dirs[i*3+2];
+    for(let k=0;k<M;k++){
+      const dot=clamp(dx*bdir[k][0]+dy*bdir[k][1]+dz*bdir[k][2],-1,1);
+      const ang=Math.acos(dot);
+      d+=bamp[k]*Math.exp(-(ang*ang)/(2*0.55*0.55));
+    }
+    disp[i]=d; sum+=d;
+  }
+  disp0Mean=sum/vertCount;
   recalcRound();
+  applyShape(); applyColors();
 }
 function recalcRound(){
-  let tot=0;
-  for(const b of G.bumps) tot+=Math.abs(b.mag);
-  G.roundness=clamp(1 - tot/G.bump0, 0, 1);
-}
-// 角度θでの輪郭半径
-function contour(theta){
-  let r=R;
-  for(const b of G.bumps){
-    const d=angDiff(theta,b.ang);
-    const infl=Math.exp(-(d*d)/(2*0.45*0.45)); // ガウシアン
-    r += b.mag*22*infl;
-  }
-  return r;
+  let s=0; for(let i=0;i<vertCount;i++) s+=Math.abs(disp[i]);
+  const mean=s/vertCount;
+  G.roundness=clamp(1-mean/disp0Mean, 0, 1);
 }
 
-// ════════════════════════════════════════════
-//  INIT POLISH — 曇りムラを生成
-// ════════════════════════════════════════════
-function initPolish(){
-  G.smudges=[];
-  const N=64;
-  for(let i=0;i<N;i++){
-    // 円内に分布（球面っぽく中心寄せ）
-    const ang=Math.random()*TAU;
-    const rr=Math.sqrt(Math.random())*R*0.92;
-    G.smudges.push({
-      x:Math.cos(ang)*rr, y:Math.sin(ang)*rr,
-      r:8+Math.random()*10,
-      a:0.6+Math.random()*0.4,   // 曇りの濃さ
-    });
-  }
-  G.smudge0=G.smudges.reduce((s,m)=>s+m.a,0);
-  recalcShine();
-}
-function recalcShine(){
-  const cur=G.smudges.reduce((s,m)=>s+Math.max(0,m.a),0);
-  G.shine=clamp(1-cur/G.smudge0,0,1);
-}
-
-// ════════════════════════════════════════════
-//  DRAW: FORGE（叩いて球にする）
-// ════════════════════════════════════════════
-function drawForge(){
-  // 影
-  ctx.save();
-  const sg=ctx.createRadialGradient(CX+5,CY+R*.8,0,CX,CY+R*.65,R*.9);
-  sg.addColorStop(0,'rgba(0,0,0,.45)'); sg.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(CX,CY+R*.86,R*.8,R*.18,0,0,TAU); ctx.fill();
-  ctx.restore();
-
-  // 歪んだ輪郭
-  ctx.save();
-  ctx.beginPath();
-  const STEP=64;
-  for(let i=0;i<=STEP;i++){
-    const th=(i/STEP)*TAU;
-    const r=contour(th);
-    const x=CX+Math.cos(th)*r, y=CY+Math.sin(th)*r;
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  }
-  ctx.closePath();
-
-  const bl=Math.round(54+G.roundness*16);
-  const base=ctx.createRadialGradient(CX-R*.3,CY-R*.3,0,CX,CY,R*1.2);
-  base.addColorStop(0,  `hsl(210,12%,${bl+22}%)`);
-  base.addColorStop(.4, `hsl(210,9%,${bl+4}%)`);
-  base.addColorStop(.78,`hsl(210,8%,${bl-14}%)`);
-  base.addColorStop(1,  `hsl(210,7%,${bl-26}%)`);
-  ctx.fillStyle=base; ctx.fill();
-  ctx.clip();
-
-  // 折り目テクスチャ
-  ctx.strokeStyle=`rgba(60,80,110,${lerp(.4,.12,G.roundness)})`; ctx.lineWidth=0.8;
-  for(let i=0;i<22;i++){
-    const a=ns(i*7.3)*TAU, r0=R*ns(i*11.1)*.9, r1=R*ns(i*19.7)*.95;
-    const a1=a+(ns(i*5.3)*2-1)*1.3;
-    ctx.beginPath();
-    ctx.moveTo(CX+Math.cos(a)*r0,CY+Math.sin(a)*r0);
-    ctx.lineTo(CX+Math.cos(a1)*r1,CY+Math.sin(a1)*r1);
-    ctx.stroke();
-  }
-  // ハイライト
-  const hl=ctx.createRadialGradient(CX-R*.34,CY-R*.36,0,CX-R*.34,CY-R*.36,R*.8);
-  hl.addColorStop(0,`rgba(255,255,255,${.28+G.roundness*.18})`); hl.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=hl; ctx.fillRect(CX-R*1.4,CY-R*1.4,R*2.8,R*2.8);
-  ctx.restore();
-
-  // ── 出っ張りマーカー（狙う目標を光らせる）──
-  for(const b of G.bumps){
-    if(b.mag<=0.10) continue; // 外向きの出っ張りを光らせる
-    const r=contour(b.ang);
-    const x=CX+Math.cos(b.ang)*r, y=CY+Math.sin(b.ang)*r;
-    const pulse2=0.5+0.5*Math.sin(animT*4+b.ang*3);
-    const sz=4+b.mag*7;
-    ctx.save();
-    ctx.globalAlpha=0.4+pulse2*0.5;
-    const mg=ctx.createRadialGradient(x,y,0,x,y,sz*2.2);
-    mg.addColorStop(0,'rgba(255,180,90,.9)');
-    mg.addColorStop(.5,'rgba(255,140,60,.4)');
-    mg.addColorStop(1,'rgba(255,140,60,0)');
-    ctx.fillStyle=mg; ctx.beginPath(); ctx.arc(x,y,sz*2.2,0,TAU); ctx.fill();
-    // 中心点
-    ctx.globalAlpha=0.7+pulse2*0.3;
-    ctx.fillStyle='#ffd8a0'; ctx.beginPath(); ctx.arc(x,y,sz*0.5,0,TAU); ctx.fill();
-    ctx.restore();
-  }
-}
-
-// ════════════════════════════════════════════
-//  DRAW: POLISH / DONE（磨いて鏡面に）
-// ════════════════════════════════════════════
-function drawPolish(){
-  const sh=G.shine;
-  // 影
-  const sg=ctx.createRadialGradient(CX+6,CY+R*.73,0,CX,CY+R*.6,R*.88);
-  sg.addColorStop(0,'rgba(0,0,0,.5)'); sg.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=sg; ctx.beginPath(); ctx.ellipse(CX,CY+R*.78,R*.82,R*.2,0,0,TAU); ctx.fill();
-
-  ctx.save();
-  ctx.beginPath(); ctx.arc(CX,CY,R,0,TAU);
-  const bl=Math.round(60+sh*30);
-  const base=ctx.createRadialGradient(CX-R*.3,CY-R*.3,0,CX,CY,R);
-  base.addColorStop(0,  `hsl(210,15%,${bl+26}%)`);
-  base.addColorStop(.4, `hsl(210,12%,${bl+8}%)`);
-  base.addColorStop(.78,`hsl(210,10%,${bl-10}%)`);
-  base.addColorStop(1,  `hsl(210,8%,${bl-26}%)`);
-  ctx.fillStyle=base; ctx.fill();
-  ctx.clip();
-
-  // ── 鏡面反射（磨くほど現れる）──
-  if(sh>0.25){
-    const pa=(sh-0.25)/0.75;
-    // 空
-    const sky=ctx.createLinearGradient(0,CY-R,0,CY+R*.2);
-    sky.addColorStop(0,`rgba(150,200,245,${pa*.30})`);
-    sky.addColorStop(1,'rgba(150,200,245,0)');
-    ctx.fillStyle=sky; ctx.fillRect(CX-R,CY-R,R*2,R*1.2);
-    // 床
-    const fl=ctx.createLinearGradient(0,CY,0,CY+R);
-    fl.addColorStop(0,'rgba(12,20,38,0)'); fl.addColorStop(1,`rgba(8,14,32,${pa*.4})`);
-    ctx.fillStyle=fl; ctx.fillRect(CX-R,CY,R*2,R);
-    // 窓の格子反射
-    if(pa>0.4){
-      const wa=(pa-0.4)/0.6;
-      ctx.save();
-      ctx.globalAlpha=wa*0.5;
-      ctx.translate(CX-R*.3, CY-R*.35);
-      ctx.transform(1,0.15,-0.1,1,0,0);
-      const ww=30,wh=38;
-      const wg=ctx.createLinearGradient(0,0,ww,wh);
-      wg.addColorStop(0,'rgba(220,240,255,.9)'); wg.addColorStop(1,'rgba(180,215,245,.3)');
-      ctx.fillStyle=wg; ctx.fillRect(0,0,ww,wh);
-      ctx.strokeStyle='rgba(40,60,90,.7)'; ctx.lineWidth=2.5;
-      ctx.strokeRect(0,0,ww,wh);
-      ctx.beginPath(); ctx.moveTo(ww/2,0); ctx.lineTo(ww/2,wh);
-      ctx.moveTo(0,wh/2); ctx.lineTo(ww,wh/2); ctx.stroke();
-      ctx.restore();
-    }
-    // 映り込む顔（鏡面完成間際）
-    if(pa>0.75){
-      const fa=(pa-0.75)/0.25;
-      ctx.save();
-      ctx.globalAlpha=fa*0.55;
-      ctx.font='30px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.translate(CX+R*.18, CY+R*.3);
-      ctx.transform(1,0,0,1.1,0,0);
-      ctx.fillText('😮', 0, 0);
-      ctx.restore();
+// ── 叩く（頂点を均す）──
+const _wp=new THREE.Vector3(), _lp=new THREE.Vector3();
+function hammerLocal(ldir, screenX, screenY){
+  const power=G.power/100;
+  const RAD=0.42;            // 影響角半径
+  let removed=0, peak=0;
+  // 中心領域を平らに
+  for(let i=0;i<vertCount;i++){
+    const dot=clamp(dirs[i*3]*ldir.x+dirs[i*3+1]*ldir.y+dirs[i*3+2]*ldir.z,-1,1);
+    const ang=Math.acos(dot);
+    if(ang<RAD){
+      const w=1-ang/RAD;
+      const cut=disp[i]*0.55*w*Math.min(1,power*12);
+      disp[i]-=cut; removed+=cut;
+      if(disp[i]>peak) peak=disp[i];
     }
   }
-
-  // メタリックバンド
-  for(let i=0;i<5;i++){
-    const a=(i/5)*Math.PI+animT*.08;
-    const g=ctx.createLinearGradient(CX+Math.cos(a)*R*1.1,CY+Math.sin(a)*R*1.1,CX-Math.cos(a)*R*1.1,CY-Math.sin(a)*R*1.1);
-    const ba=.03+sh*.08; g.addColorStop(0,'rgba(255,255,255,0)'); g.addColorStop(.5,`rgba(255,255,255,${ba})`); g.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle=g; ctx.fillRect(CX-R,CY-R,R*2,R*2);
-  }
-
-  // ── 曇りムラ（残っているほどくすむ）──
-  for(const m of G.smudges){
-    if(m.a<=0.02) continue;
-    const x=CX+m.x, y=CY+m.y;
-    const g=ctx.createRadialGradient(x,y,0,x,y,m.r);
-    g.addColorStop(0,`rgba(120,130,140,${m.a*0.55})`);
-    g.addColorStop(.6,`rgba(110,120,135,${m.a*0.32})`);
-    g.addColorStop(1,'rgba(110,120,135,0)');
-    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,m.r,0,TAU); ctx.fill();
-  }
-
-  // ハイライト
-  const hl=ctx.createRadialGradient(CX-R*.34,CY-R*.38,0,CX-R*.34,CY-R*.38,R*.72);
-  hl.addColorStop(0,`rgba(255,255,255,${.14+sh*.6})`); hl.addColorStop(.6,`rgba(240,248,255,${sh*.14})`); hl.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=hl; ctx.fillRect(CX-R,CY-R,R*2,R*2);
-  // 小ハイライト点
-  if(sh>0.2){
-    const sp=ctx.createRadialGradient(CX-R*.28,CY-R*.42,0,CX-R*.28,CY-R*.42,R*.1);
-    sp.addColorStop(0,`rgba(255,255,255,${sh})`); sp.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle=sp; ctx.fillRect(CX-R,CY-R,R*2,R*2);
-  }
-  // きらめき
-  if(sh>0.6){
-    const sa=(sh-0.6)/0.4;
-    for(let i=0;i<6;i++){
-      const a=animT*.8+i*(TAU/6), d=R*(.28+.42*Math.sin(animT*.6+i*1.2));
-      const sx=CX+Math.cos(a)*d, sy=CY+Math.sin(a)*d;
-      drawStar(sx,sy,4,(Math.sin(animT*2.4+i)*.5+.5)*sa*.7);
+  // 材料が外周リングへ少し逃げる（whack-a-mole）
+  if(removed>0){
+    let ringCount=0, ringIdx=[];
+    for(let i=0;i<vertCount;i++){
+      const dot=clamp(dirs[i*3]*ldir.x+dirs[i*3+1]*ldir.y+dirs[i*3+2]*ldir.z,-1,1);
+      const ang=Math.acos(dot);
+      if(ang>=RAD && ang<RAD*1.7){ ringIdx.push(i); ringCount++; }
     }
+    const give=removed*0.28/Math.max(1,ringCount);
+    for(const i of ringIdx) disp[i]+=give;
   }
-  ctx.restore();
-
-  // リム
-  ctx.save(); ctx.beginPath(); ctx.arc(CX,CY,R,0,TAU);
-  ctx.strokeStyle=`rgba(200,220,240,${.04+sh*.1})`; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
-}
-function drawStar(x,y,r,a){
-  ctx.save(); ctx.globalAlpha=a; ctx.beginPath();
-  for(let i=0;i<8;i++){ const an=(i/8)*TAU, rr=i%2===0?r:r*.28;
-    i===0?ctx.moveTo(x+Math.cos(an)*rr,y+Math.sin(an)*rr):ctx.lineTo(x+Math.cos(an)*rr,y+Math.sin(an)*rr); }
-  ctx.closePath(); ctx.fillStyle='#e8f6ff'; ctx.fill(); ctx.restore();
-}
-
-// ════════════════════════════════════════════
-//  DRAW DISPATCH
-// ════════════════════════════════════════════
-function drawScene(){
-  ctx.clearRect(0,0,CW,CH);
-  const k=pulse*0.05;
-  ctx.save();
-  ctx.translate(CX,CY-k*24);
-  ctx.rotate(spin+tilt*0.2);
-  ctx.scale(1+k,1-k);
-  ctx.translate(-CX,-CY);
-  if(G.phase==='forge') drawForge();
-  else drawPolish();
-  ctx.restore();
-}
-
-// ════════════════════════════════════════════
-//  AUDIO
-// ════════════════════════════════════════════
-let actx=null;
-function initAudio(){ if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)(); }
-function sfxHammer(hit){
-  if(!actx) return;
-  const o=actx.createOscillator(), g=actx.createGain();
-  o.connect(g); g.connect(actx.destination);
-  o.type='square';
-  const f=hit?700:300;
-  o.frequency.setValueAtTime(f+Math.random()*120, actx.currentTime);
-  o.frequency.exponentialRampToValueAtTime(80, actx.currentTime+.07);
-  g.gain.setValueAtTime(hit?.07:.045, actx.currentTime);
-  g.gain.exponentialRampToValueAtTime(.001, actx.currentTime+.1);
-  o.start(); o.stop(actx.currentTime+.13);
-  // 金属の余韻
-  if(hit){
-    const o2=actx.createOscillator(), g2=actx.createGain();
-    o2.connect(g2); g2.connect(actx.destination);
-    o2.type='triangle'; o2.frequency.setValueAtTime(1400+Math.random()*300,actx.currentTime);
-    g2.gain.setValueAtTime(.025,actx.currentTime);
-    g2.gain.exponentialRampToValueAtTime(.001,actx.currentTime+.18);
-    o2.start(); o2.stop(actx.currentTime+.2);
-  }
-}
-function sfxRub(){
-  if(!actx) return;
-  const o=actx.createOscillator(), g=actx.createGain(), f=actx.createBiquadFilter();
-  o.connect(f); f.connect(g); g.connect(actx.destination);
-  o.type='sawtooth'; f.type='bandpass'; f.frequency.value=2000+Math.random()*1500; f.Q.value=2;
-  o.frequency.setValueAtTime(1000+Math.random()*400,actx.currentTime);
-  g.gain.setValueAtTime(.02,actx.currentTime);
-  g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+.09);
-  o.start(); o.stop(actx.currentTime+.1);
-}
-function sfxShine(){
-  if(!actx) return;
-  [880,1320,1760].forEach((fr,i)=>{
-    const o=actx.createOscillator(), g=actx.createGain();
-    o.connect(g); g.connect(actx.destination); o.type='sine';
-    o.frequency.value=fr;
-    const t0=actx.currentTime+i*0.08;
-    g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.05,t0+.02);
-    g.gain.exponentialRampToValueAtTime(.001,t0+.4);
-    o.start(t0); o.stop(t0+.45);
-  });
-}
-
-// ════════════════════════════════════════════
-//  EFFECTS
-// ════════════════════════════════════════════
-const bw=document.getElementById('ball-wrap');
-function fxText(x,y,txt,color){
-  const e=document.createElement('div'); e.className='fx fx-txt';
-  e.textContent=txt; e.style.color=color; e.style.left=(x-18)+'px'; e.style.top=(y-12)+'px';
-  bw.appendChild(e); setTimeout(()=>e.remove(),800);
-}
-function fxRing(x,y,color){
-  const e=document.createElement('div'); e.className='fx fx-ring';
-  e.style.cssText+=`left:${x}px;top:${y}px;width:46px;height:46px;border-color:${color};`;
-  bw.appendChild(e); setTimeout(()=>e.remove(),500);
-}
-function fxSparks(x,y,colors,n){
-  for(let i=0;i<n;i++){
-    const e=document.createElement('div'); e.className='fx spark';
-    const a=Math.random()*TAU, d=28+Math.random()*46, sz=2+Math.random()*4;
-    e.style.cssText+=`left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;background:${colors[i%colors.length]};--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d-20}px;box-shadow:0 0 4px ${colors[0]};`;
-    bw.appendChild(e); setTimeout(()=>e.remove(),620);
-  }
-}
-
-// ════════════════════════════════════════════
-//  HAMMER（叩く）
-// ════════════════════════════════════════════
-function hammerAt(ex,ey){
-  const dx=ex-CX, dy=ey-CY;
-  const th=Math.atan2(dy,dx);
-  const power=G.power/100; // 0.08前後
-
-  // タップ角度の最寄りの出っ張りを探す
-  let best=null,bd=0.6;
-  for(const bb of G.bumps){ if(bb.mag>0.06){ const d=angDiff(bb.ang,th); if(d<bd){bd=d;best=bb;} } }
-  let hit=false, reduced=0;
-
-  if(best){
-    // 命中！出っ張りを潰す
-    const before=best.mag;
-    best.mag=Math.max(0, best.mag-power*1.6);
-    reduced=before-best.mag;
-    G.pts+=Math.ceil(reduced*150);
-    hit=true;
-    // 潰した材料が近くの歪みへ逃げる（叩くと別の所が出っ張る＝whack-a-mole）
-    if(reduced>0.04){
-      let near=null,nd=1.2;
-      for(const bb of G.bumps){ if(bb===best)continue; const d=angDiff(bb.ang,th); if(d<nd){nd=d;near=bb;} }
-      if(near) near.mag += reduced*0.35*(near.mag>=0?1:-1);
-      else G.bumps.push({ang:th+0.9*(Math.random()>.5?1:-1), mag:reduced*0.35});
-    }
-  } else {
-    // 出っ張りの無い平らな所を叩いた＝空振り：小さな膨らみができる
-    G.bumps.push({ang:th, mag:power*0.45});
-    G.pts+=1;
-  }
-  G.bumps=G.bumps.filter(x=>Math.abs(x.mag)>0.02);
   recalcRound();
+  applyShape(); applyColors();
   G.hits++;
-
+  G.pts+=Math.max(1, Math.ceil(removed*900));
   // 反応
-  pVel+=hit?12:7;
-  spinVel+=(dx<0?-1:1)*(hit?4:2);
-  tiltVel+=dx/CX*5;
+  punch=1; spinKick+=(Math.random()*2-1)*0.5;
+  const hit=removed>0.002;
   sfxHammer(hit);
-  if(hit){
-    fxText(ex,ey,'カンッ!','#ffd89a'); fxRing(ex,ey,'rgba(255,180,90,.8)');
-    fxSparks(ex,ey,['#ffd8a0','#ffb060','#fff0d0'],10);
-  } else {
-    fxText(ex,ey,'ｸﾞﾆｬ…','#a0b0c0'); fxSparks(ex,ey,['#90a0b0','#c0c8d0'],5);
-  }
-
+  if(hit){ fxText(screenX,screenY,'カンッ!','#ffd89a'); fxRing(screenX,screenY,'rgba(255,180,90,.85)'); fxSparks(screenX,screenY,['#ffd8a0','#ffb060','#fff0d0'],10); }
+  else { fxText(screenX,screenY,'ｺﾂﾝ','#a0b0c0'); fxSparks(screenX,screenY,['#90a0b0','#c0c8d0'],4); }
   if(G.roundness>=0.85) toPolish();
   refreshUI();
 }
 
 // ════════════════════════════════════════════
-//  POLISH（磨く / こする）
+//  POLISH
 // ════════════════════════════════════════════
-function polishAt(ex,ey){
-  const dx=ex-CX, dy=ey-CY;
-  if(dx*dx+dy*dy > R*R) return false; // 玉の外
+function initPolishMap(){
+  // 曇りムラ：暗グレー地に明暗の斑（roughnessMap, 明=粗い=曇り）
+  roughCtx.fillStyle='#d2d2d2'; roughCtx.fillRect(0,0,1024,512); // roughness~0.82
+  for(let k=0;k<260;k++){
+    const x=Math.random()*1024, y=Math.random()*512, r=18+Math.random()*46;
+    const a=0.10+Math.random()*0.18;
+    const g=roughCtx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,`rgba(255,255,255,${a})`); g.addColorStop(1,'rgba(255,255,255,0)');
+    roughCtx.fillStyle=g; roughCtx.beginPath(); roughCtx.arc(x,y,r,0,Math.PI*2); roughCtx.fill();
+  }
+  roughTex.needsUpdate=true;
+  recalcShine();
+}
+const SHINE_LO=1-0.86, SHINE_HI=1-0.06; // 生shineの曇り/鏡面基準
+function recalcShine(){
+  sampleCtx.drawImage(roughCanvas,0,0,96,48);
+  const d=sampleCtx.getImageData(0,0,96,48).data;
+  let s=0; const n=96*48;
+  for(let i=0;i<d.length;i+=4) s+=d[i];
+  const meanLum=s/n;             // 0..255 （明=粗い曇り）
+  const raw=1-meanLum/255;       // 大きいほど磨けてる
+  G.shine=clamp((raw-SHINE_LO)/(SHINE_HI-SHINE_LO),0,1);
+}
+function polishUV(uv, screenX, screenY){
   const grit=GRITS[G.gritIdx];
-  const reach=22*G.brush;
-  let worked=0;
-  for(const m of G.smudges){
-    const d=Math.hypot(m.x-dx, m.y-dy);
-    if(d<reach){
-      const target=grit.residual;          // この番手で到達できる下限
-      if(m.a>target){
-        const cut=grit.speed*0.5*(1-d/reach);
-        const na=Math.max(target, m.a-cut);
-        worked+=(m.a-na);
-        m.a=na;
-      }
-    }
-  }
-  if(worked>0){
-    G.pts+=Math.ceil(worked*60);
-    G.rubs++;
-    const before=G.shine;
-    recalcShine();
-    pVel+=4; spinVel+=dx*0.01;
-    if(G.rubs%3===0) sfxRub();
-    fxSparks(ex,ey,['#d0e8f8','#eef6ff','#fff'],3);
-    // 鏡面到達演出
-    if(before<0.98 && G.shine>=0.98) finish();
-    refreshUI();
-    return true;
-  }
-  return false;
+  const x=uv.x*1024, y=(1-uv.y)*512;
+  const R=46*G.brush;
+  // darken合成で「現在より暗く（=滑らかに）」描く。番手で到達できる暗さが決まる
+  roughCtx.globalCompositeOperation='darken';
+  const g=roughCtx.createRadialGradient(x,y,0,x,y,R);
+  const lum=grit.lum, a=grit.speed;
+  g.addColorStop(0,`rgba(${lum},${lum},${lum},${a})`);
+  g.addColorStop(0.6,`rgba(${lum},${lum},${lum},${a*0.5})`);
+  g.addColorStop(1,`rgba(${lum},${lum},${lum},0)`);
+  roughCtx.fillStyle=g; roughCtx.beginPath(); roughCtx.arc(x,y,R,0,Math.PI*2); roughCtx.fill();
+  // 横方向の継ぎ目をまたぐ場合の補助描画
+  if(x<R){ roughCtx.beginPath(); const g2=roughCtx.createRadialGradient(x+1024,y,0,x+1024,y,R); g2.addColorStop(0,`rgba(${lum},${lum},${lum},${a})`); g2.addColorStop(1,`rgba(${lum},${lum},${lum},0)`); roughCtx.fillStyle=g2; roughCtx.arc(x+1024,y,R,0,Math.PI*2); roughCtx.fill(); }
+  else if(x>1024-R){ roughCtx.beginPath(); const g3=roughCtx.createRadialGradient(x-1024,y,0,x-1024,y,R); g3.addColorStop(0,`rgba(${lum},${lum},${lum},${a})`); g3.addColorStop(1,`rgba(${lum},${lum},${lum},0)`); roughCtx.fillStyle=g3; roughCtx.arc(x-1024,y,R,0,Math.PI*2); roughCtx.fill(); }
+  roughCtx.globalCompositeOperation='source-over';
+  roughTex.needsUpdate=true;
+
+  G.rubs++;
+  G.pts+=2;
+  punch=0.25;
+  if(G.rubs%4===0) sfxRub();
+  if(screenX!=null) fxSparks(screenX,screenY,['#d0e8f8','#eef6ff','#fff'],3);
 }
 
 // ════════════════════════════════════════════
@@ -685,218 +398,255 @@ function polishAt(ex,ey){
 function toPolish(){
   if(G.phase!=='forge') return;
   G.phase='polish';
-  initPolish();
+  // 仕上げのため凹凸をほぼ均し、純金属マテリアルへ
+  for(let i=0;i<vertCount;i++) disp[i]*=0.35;
+  applyShape();
+  initPolishMap();
+  mat.vertexColors=false; mat.color.set(0xf2f5f8);
+  mat.metalness=1.0; mat.roughness=1.0; mat.roughnessMap=roughTex;
+  mat.needsUpdate=true;
   banner('磨きへ！',' POLISH PHASE ');
-  document.getElementById('phase-pill').className='polish';
-  document.getElementById('phase-pill').textContent='✨ 磨いて鏡面にする';
-  document.getElementById('hint').textContent='玉をこすって曇りを消す';
-  document.getElementById('round-row').classList.add('dim');
-  document.getElementById('shine-row').classList.remove('dim');
-  document.getElementById('tools-title').textContent='TOOLS — 磨き道具';
+  $('phase-pill').className='polish'; $('phase-pill').textContent='✨ 磨いて鏡面にする';
+  $('hint').textContent='なでて磨く（ドラッグ）';
+  $('round-row').classList.add('dim'); $('shine-row').classList.remove('dim');
+  $('tools-title').textContent='TOOLS — 磨き道具';
   buildTools();
 }
-
 function finish(){
   if(G.phase==='done') return;
-  G.phase='done';
-  sfxShine();
-  document.getElementById('phase-pill').className='done';
-  document.getElementById('phase-pill').textContent='🏆 完成！';
-  document.getElementById('hint').textContent='鏡面アルミ玉 完成';
-  // ランク判定
-  const score=G.roundness*0.4 + G.shine*0.6;
+  G.phase='done'; sfxShine();
+  $('phase-pill').className='done'; $('phase-pill').textContent='🏆 完成！';
+  $('hint').textContent='鏡面アルミ玉 完成';
+  const score=G.roundness*0.4+G.shine*0.6;
   let rank,color;
-  if(G.roundness>=0.97&&G.shine>=0.999){ rank='SSS'; color='#ffe680'; }
-  else if(score>=0.97){ rank='SS'; color='#a0f0ff'; }
-  else if(score>=0.94){ rank='S'; color='#90e0ff'; }
-  else if(score>=0.90){ rank='A'; color='#90ffb0'; }
-  else if(score>=0.85){ rank='B'; color='#d0e0a0'; }
+  if(G.roundness>=0.95&&G.shine>=0.995){ rank='SSS'; color='#ffe680'; }
+  else if(score>=0.96){ rank='SS'; color='#a0f0ff'; }
+  else if(score>=0.93){ rank='S'; color='#90e0ff'; }
+  else if(score>=0.89){ rank='A'; color='#90ffb0'; }
+  else if(score>=0.84){ rank='B'; color='#d0e0a0'; }
   else { rank='C'; color='#e0c090'; }
   setTimeout(()=>{
-    document.getElementById('finale-rank').textContent=rank;
-    document.getElementById('finale-rank').style.color=color;
-    document.getElementById('fs-round').textContent=Math.round(G.roundness*100)+'%';
-    document.getElementById('fs-shine').textContent=Math.round(G.shine*100)+'%';
-    document.getElementById('fs-hits').textContent=G.hits+'回';
-    document.getElementById('fs-rubs').textContent=G.rubs+'回';
-    document.getElementById('finale').className='show';
+    $('finale-rank').textContent=rank; $('finale-rank').style.color=color;
+    $('fs-round').textContent=Math.round(G.roundness*100)+'%';
+    $('fs-shine').textContent=Math.round(G.shine*100)+'%';
+    $('fs-hits').textContent=G.hits+'回'; $('fs-rubs').textContent=G.rubs+'回';
+    $('finale').className='show';
   },900);
 }
-
 function banner(big,sub){
-  const el=document.getElementById('banner');
-  document.getElementById('banner-txt').textContent=big;
-  document.querySelector('#banner-sub').textContent=sub;
+  const el=$('banner'); $('banner-txt').textContent=big; $('banner-sub').textContent=sub;
   el.className=''; void el.offsetWidth; el.className='show';
 }
 
 // ════════════════════════════════════════════
-//  INPUT（タップ＆ドラッグ）
+//  INPUT（タップ＝叩く / ドラッグ＝磨く）
 // ════════════════════════════════════════════
-let pointerDown=false;
-function localXY(e){
-  const r=bw.getBoundingClientRect();
-  const cr=cv.getBoundingClientRect();
-  // canvasは中央寄せ。canvas基準のローカル座標へ
-  return { ex:e.clientX-cr.left, ey:e.clientY-cr.top, fx:e.clientX-r.left, fy:e.clientY-r.top };
+let pointerDown=false, moved=false, downX=0, downY=0;
+function setNdc(e){
+  const r=renderer.domElement.getBoundingClientRect();
+  ndc.x=((e.clientX-r.left)/r.width)*2-1;
+  ndc.y=-((e.clientY-r.top)/r.height)*2+1;
+  return r;
 }
-bw.addEventListener('pointerdown',e=>{
-  e.preventDefault(); initAudio(); pointerDown=true;
-  const p=localXY(e);
-  if(G.phase==='forge'){
-    hammerAt(p.ex,p.ey);
-    if(G.twin) setTimeout(()=>{ if(G.phase==='forge'){ hammerAt(p.ex+(Math.random()*16-8),p.ey+(Math.random()*16-8)); } },90);
-  } else if(G.phase==='polish'){
-    polishAt(p.ex,p.ey);
+function rayHit(){
+  raycaster.setFromCamera(ndc, camera);
+  const hits=raycaster.intersectObject(ball,false);
+  return hits.length?hits[0]:null;
+}
+function viewXY(e){ const r=view.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
+
+view.addEventListener('pointerdown', e=>{
+  e.preventDefault(); initAudio(); pointerDown=true; moved=false;
+  downX=e.clientX; downY=e.clientY;
+  if(G.phase==='polish'){ doPolishAt(e); }
+});
+view.addEventListener('pointermove', e=>{
+  if(!pointerDown) return;
+  if(Math.hypot(e.clientX-downX, e.clientY-downY)>4) moved=true;
+  if(G.phase==='polish') doPolishAt(e);
+});
+window.addEventListener('pointerup', e=>{
+  if(!pointerDown){ return; } pointerDown=false;
+  if(G.phase==='forge' && !moved){
+    setNdc(e); const h=rayHit();
+    if(h){
+      _lp.copy(h.point); ball.worldToLocal(_lp); _lp.normalize();
+      const [vx,vy]=viewXY(e);
+      hammerLocal(_lp, vx, vy);
+      if(G.twin){ const j=_lp.clone(); j.x+=(Math.random()*.1-.05); j.y+=(Math.random()*.1-.05); j.normalize(); setTimeout(()=>{ if(G.phase==='forge') hammerLocal(j,vx+8,vy-6); },90); }
+    }
   }
 });
-bw.addEventListener('pointermove',e=>{
-  if(!pointerDown || G.phase!=='polish') return;
-  const p=localXY(e);
-  polishAt(p.ex,p.ey);
-});
-window.addEventListener('pointerup',()=>pointerDown=false);
-window.addEventListener('pointercancel',()=>pointerDown=false);
+view.addEventListener('pointercancel',()=>pointerDown=false);
+
+function doPolishAt(e){
+  setNdc(e); const h=rayHit();
+  if(h && h.uv){ const [vx,vy]=viewXY(e); polishUV(h.uv, vx, vy); recalcShine();
+    if(G.shine>=0.97) finish(); refreshUI(); }
+}
 
 // ════════════════════════════════════════════
-//  AUTO（自動工具）
+//  AUTO TOOLS
 // ════════════════════════════════════════════
 setInterval(()=>{
   if(G.phase==='forge' && G.autoHammer>0){
-    // 最大の出っ張りを少し叩く
-    let mx=null;
-    for(const b of G.bumps) if(b.mag>0.08 && (!mx||b.mag>mx.mag)) mx=b;
-    if(mx){ mx.mag=Math.max(0,mx.mag-0.04*G.autoHammer); G.bumps=G.bumps.filter(x=>Math.abs(x.mag)>0.02); recalcRound();
-      if(G.roundness>=0.85) toPolish(); refreshUI(); }
+    // 最も出っ張った頂点方向を自動で叩く
+    let mi=0,mv=-1;
+    for(let i=0;i<vertCount;i+=7){ if(disp[i]>mv){mv=disp[i];mi=i;} }
+    if(mv>0.04){
+      _lp.set(dirs[mi*3],dirs[mi*3+1],dirs[mi*3+2]);
+      const power=(G.power*0.5*G.autoHammer)/100, RAD=0.42;
+      let removed=0;
+      for(let i=0;i<vertCount;i++){
+        const dot=clamp(dirs[i*3]*_lp.x+dirs[i*3+1]*_lp.y+dirs[i*3+2]*_lp.z,-1,1);
+        const ang=Math.acos(dot);
+        if(ang<RAD){ const cut=disp[i]*0.4*(1-ang/RAD)*Math.min(1,power*12); disp[i]-=cut; removed+=cut; }
+      }
+      G.pts+=Math.ceil(removed*500);
+      recalcRound(); applyShape(); applyColors();
+      if(G.roundness>=0.85) toPolish(); refreshUI();
+    }
   } else if(G.phase==='polish' && G.autoPolish>0){
     const grit=GRITS[G.gritIdx];
-    let worked=0;
-    for(let k=0;k<G.autoPolish*2;k++){
-      const m=G.smudges[Math.floor(Math.random()*G.smudges.length)];
-      if(m && m.a>grit.residual){ const na=Math.max(grit.residual,m.a-0.05); worked+=m.a-na; m.a=na; }
+    for(let k=0;k<G.autoPolish*3;k++){
+      const x=Math.random()*1024, y=Math.random()*512, R=40;
+      roughCtx.globalCompositeOperation='darken';
+      const g=roughCtx.createRadialGradient(x,y,0,x,y,R);
+      g.addColorStop(0,`rgba(${grit.lum},${grit.lum},${grit.lum},${grit.speed*0.6})`);
+      g.addColorStop(1,`rgba(${grit.lum},${grit.lum},${grit.lum},0)`);
+      roughCtx.fillStyle=g; roughCtx.beginPath(); roughCtx.arc(x,y,R,0,Math.PI*2); roughCtx.fill();
+      roughCtx.globalCompositeOperation='source-over';
     }
-    if(worked>0){ const before=G.shine; recalcShine(); if(before<0.98&&G.shine>=0.98) finish(); refreshUI(); }
+    roughTex.needsUpdate=true; recalcShine();
+    if(G.shine>=0.97) finish(); refreshUI();
   }
-},700);
+}, 650);
+
+// ════════════════════════════════════════════
+//  AUDIO
+// ════════════════════════════════════════════
+let actx=null;
+function initAudio(){ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); }
+function sfxHammer(hit){
+  if(!actx) return;
+  const o=actx.createOscillator(), g=actx.createGain(); o.connect(g); g.connect(actx.destination);
+  o.type='square'; const f=hit?720:320;
+  o.frequency.setValueAtTime(f+Math.random()*120, actx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(80, actx.currentTime+.07);
+  g.gain.setValueAtTime(hit?.07:.045, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001, actx.currentTime+.1);
+  o.start(); o.stop(actx.currentTime+.13);
+  if(hit){ const o2=actx.createOscillator(), g2=actx.createGain(); o2.connect(g2); g2.connect(actx.destination);
+    o2.type='triangle'; o2.frequency.setValueAtTime(1450+Math.random()*300,actx.currentTime);
+    g2.gain.setValueAtTime(.025,actx.currentTime); g2.gain.exponentialRampToValueAtTime(.001,actx.currentTime+.18);
+    o2.start(); o2.stop(actx.currentTime+.2); }
+}
+function sfxRub(){ if(!actx) return;
+  const o=actx.createOscillator(), g=actx.createGain(), f=actx.createBiquadFilter();
+  o.connect(f); f.connect(g); g.connect(actx.destination);
+  o.type='sawtooth'; f.type='bandpass'; f.frequency.value=2200+Math.random()*1500; f.Q.value=2;
+  o.frequency.setValueAtTime(1000+Math.random()*400,actx.currentTime);
+  g.gain.setValueAtTime(.018,actx.currentTime); g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+.09);
+  o.start(); o.stop(actx.currentTime+.1);
+}
+function sfxShine(){ if(!actx) return;
+  [880,1320,1760].forEach((fr,i)=>{ const o=actx.createOscillator(), g=actx.createGain(); o.connect(g); g.connect(actx.destination);
+    o.type='sine'; o.frequency.value=fr; const t0=actx.currentTime+i*0.08;
+    g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.05,t0+.02); g.gain.exponentialRampToValueAtTime(.001,t0+.4);
+    o.start(t0); o.stop(t0+.45); });
+}
+
+// ════════════════════════════════════════════
+//  HTML EFFECTS
+// ════════════════════════════════════════════
+function fxText(x,y,t,c){ const e=document.createElement('div'); e.className='fx fx-txt'; e.textContent=t; e.style.color=c; e.style.left=(x-18)+'px'; e.style.top=(y-12)+'px'; view.appendChild(e); setTimeout(()=>e.remove(),800); }
+function fxRing(x,y,c){ const e=document.createElement('div'); e.className='fx fx-ring'; e.style.cssText+=`left:${x}px;top:${y}px;width:44px;height:44px;border-color:${c};`; view.appendChild(e); setTimeout(()=>e.remove(),500); }
+function fxSparks(x,y,cols,n){ for(let i=0;i<n;i++){ const e=document.createElement('div'); e.className='fx spark'; const a=Math.random()*Math.PI*2, d=26+Math.random()*44, s=2+Math.random()*4; e.style.cssText+=`left:${x}px;top:${y}px;width:${s}px;height:${s}px;background:${cols[i%cols.length]};--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d-18}px;box-shadow:0 0 4px ${cols[0]};`; view.appendChild(e); setTimeout(()=>e.remove(),620); } }
 
 // ════════════════════════════════════════════
 //  TOOLS UI
 // ════════════════════════════════════════════
-function toolCost(t){
-  const lvl=(G._lvl&&G._lvl[t.id])||0;
-  return Math.floor(t.base*Math.pow(t.mult,lvl));
-}
+function toolCost(t){ const lvl=(G._lvl&&G._lvl[t.id])||0; return Math.floor(t.base*Math.pow(t.mult,lvl)); }
 function buildTools(){
   if(!G._lvl) G._lvl={};
-  const box=document.getElementById('tools'); box.innerHTML='';
-  const showTag = G.phase; // forge中はforge道具を上に
-  const sorted=[...TOOLS].sort((a,b)=>{
-    const ap=a.tag===G.phase?0:1, bp=b.tag===G.phase?0:1; return ap-bp;
-  });
+  const box=$('tools'); box.innerHTML='';
+  const sorted=[...TOOLS].sort((a,b)=>((a.tag===G.phase?0:1)-(b.tag===G.phase?0:1)));
   for(const t of sorted){
     if(!t.can()) continue;
     const cost=toolCost(t);
-    const irrelevant = (G.phase==='forge'&&t.tag==='polish')||(G.phase==='polish'&&t.tag==='forge')||G.phase==='done';
+    const irrelevant=(G.phase==='forge'&&t.tag==='polish')||(G.phase==='polish'&&t.tag==='forge')||G.phase==='done';
     const locked=G.pts<cost;
     const row=document.createElement('div');
     row.className='tool'+(locked?' locked':'')+(irrelevant?' off':'');
     const desc=typeof t.desc==='function'?t.desc():t.desc;
-    row.innerHTML=`
-      <div class="tool-ico">${t.ico}</div>
-      <div class="tool-info">
-        <div class="tool-name">${t.name}<span class="tool-tag ${t.tag==='forge'?'tag-forge':'tag-polish'}">${t.tag==='forge'?'叩き':'磨き'}</span></div>
-        <div class="tool-desc">${desc}</div>
-      </div>
-      <div class="tool-cost">🔩 ${fmt(cost)}</div>`;
-    row.addEventListener('click',()=>{
-      const c=toolCost(t); if(G.pts<c||!t.can()) return;
-      G.pts-=c; G._lvl[t.id]=(G._lvl[t.id]||0)+1; t.buy();
-      buildTools(); refreshUI();
-    });
+    row.innerHTML=`<div class="tool-ico">${t.ico}</div><div class="tool-info"><div class="tool-name">${t.name}<span class="tool-tag ${t.tag==='forge'?'tag-forge':'tag-polish'}">${t.tag==='forge'?'叩き':'磨き'}</span></div><div class="tool-desc">${desc}</div></div><div class="tool-cost">🔩 ${fmt(cost)}</div>`;
+    row.addEventListener('click',()=>{ const c=toolCost(t); if(G.pts<c||!t.can())return; G.pts-=c; G._lvl[t.id]=(G._lvl[t.id]||0)+1; t.buy(); buildTools(); refreshUI(); });
     box.appendChild(row);
   }
-}
-function refreshToolsLock(){
-  // コスト表示更新と locked 切替（再構築は番手等で必要なときのみ）
-  document.querySelectorAll('.tool').forEach(()=>{});
 }
 
 // ════════════════════════════════════════════
 //  UI
 // ════════════════════════════════════════════
-const NAMES_FORGE=[
-  [0,   'くしゃくしゃのアルミホイル'],
-  [0.3, 'でこぼこの塊'],
-  [0.5, 'だんだん丸く'],
-  [0.7, 'いい球になってきた'],
-  [0.82,'あと少しで真球！'],
-];
-const NAMES_POLISH=[
-  [0,   'くすんだ金属の玉'],
-  [0.3, 'ムラが減ってきた'],
-  [0.55,'うっすら光沢が'],
-  [0.78,'かなりピカピカ'],
-  [0.93,'もう少しで鏡面！'],
-];
-function stageName(){
-  if(G.phase==='done') return '鏡面アルミ玉 ✦';
-  const arr=G.phase==='forge'?NAMES_FORGE:NAMES_POLISH;
-  const v=G.phase==='forge'?G.roundness:G.shine;
-  let nm=arr[0][1]; for(const [t,n] of arr) if(v>=t) nm=n; return nm;
-}
+const NAMES_FORGE=[[0,'くしゃくしゃのアルミ'],[0.3,'でこぼこの塊'],[0.5,'だんだん丸く'],[0.7,'いい球になってきた'],[0.82,'あと少しで真球！']];
+const NAMES_POLISH=[[0,'くすんだ金属の玉'],[0.3,'ムラが減ってきた'],[0.55,'うっすら光沢が'],[0.78,'かなりピカピカ'],[0.92,'もう少しで鏡面！']];
+function stageName(){ if(G.phase==='done') return '鏡面アルミ玉 ✦'; const arr=G.phase==='forge'?NAMES_FORGE:NAMES_POLISH; const v=G.phase==='forge'?G.roundness:G.shine; let nm=arr[0][1]; for(const [t,n] of arr) if(v>=t) nm=n; return nm; }
 function refreshUI(){
-  document.getElementById('pts-val').textContent=fmt(G.pts);
-  document.getElementById('round-fill').style.width=(G.roundness*100)+'%';
-  document.getElementById('round-pct').textContent=Math.round(G.roundness*100)+'%';
-  document.getElementById('shine-fill').style.width=(G.shine*100)+'%';
-  document.getElementById('shine-pct').textContent=Math.round(G.shine*100)+'%';
-  document.getElementById('stage-name').textContent=stageName();
-  // ツールのlock状態だけ軽く更新
+  $('pts-val').textContent=fmt(G.pts);
+  $('round-fill').style.width=(G.roundness*100)+'%'; $('round-pct').textContent=Math.round(G.roundness*100)+'%';
+  $('shine-fill').style.width=(G.shine*100)+'%'; $('shine-pct').textContent=Math.round(G.shine*100)+'%';
+  $('stage-name').textContent=stageName();
   refreshToolsState();
 }
-let lastToolSig='';
-function refreshToolsState(){
-  // 購入可否が変わったら作り直す（番手で desc が変わる等もここで吸収）
-  const sig=G.phase+'|'+G.gritIdx+'|'+G.twin+'|'+TOOLS.map(t=>t.can()?toolCost(t):'x').join(',')+'|'+(G.pts>=minToolCost()?'a':'b');
-  if(sig!==lastToolSig){ lastToolSig=sig; buildTools(); }
-}
-function minToolCost(){ let m=Infinity; for(const t of TOOLS) if(t.can()) m=Math.min(m,toolCost(t)); return m; }
+let lastSig='';
+function refreshToolsState(){ const sig=G.phase+'|'+G.gritIdx+'|'+G.twin+'|'+TOOLS.map(t=>t.can()?toolCost(t):'x').join(',')+'|'+(G.pts>=minCost()?'a':'b'); if(sig!==lastSig){ lastSig=sig; buildTools(); } }
+function minCost(){ let m=Infinity; for(const t of TOOLS) if(t.can()) m=Math.min(m,toolCost(t)); return m; }
 function fmt(n){ if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return(n/1e3).toFixed(1)+'K'; return Math.floor(n)+''; }
 
 // ════════════════════════════════════════════
 //  LOOP
 // ════════════════════════════════════════════
-let last=0;
-function loop(ts){
-  const dt=Math.min((ts-last)/1000,.05); last=ts; animT+=dt;
-  pVel+=(-pulse)*70*dt; pVel*=Math.pow(0.0008,dt); pulse+=pVel*dt;
-  spin+=spinVel*dt; spinVel*=Math.pow(0.012,dt); if(Math.abs(spinVel)<0.0004)spinVel=0;
-  tiltVel+=(-tilt)*55*dt; tiltVel*=Math.pow(0.0015,dt); tilt+=tiltVel*dt;
-  drawScene();
-  requestAnimationFrame(loop);
+let lastT=performance.now();
+function animate(now){
+  const dt=Math.min((now-lastT)/1000,.05); lastT=now;
+  // 自動回転（全方向を見せる）＋叩き反応
+  if(ball){
+    ball.rotation.y += dt*(G.phase==='done'?0.5:0.3) + spinKick*dt*4;
+    ball.rotation.x = Math.sin(now*0.0003)*0.12;
+    spinKick*=Math.pow(0.02,dt);
+    const sq=1-punch*0.06;
+    ball.scale.set(1+punch*0.04, sq, 1+punch*0.04);
+    punch*=Math.pow(0.0005,dt);
+    renderer.render(scene,camera);
+  }
+  requestAnimationFrame(animate);
 }
 
 // ════════════════════════════════════════════
-//  START / RESTART
+//  START
 // ════════════════════════════════════════════
 function start(){
   G=freshState();
+  if(mat){ mat.vertexColors=true; mat.color.set(0xffffff); mat.metalness=0.75; mat.roughness=0.62; mat.roughnessMap=null; mat.needsUpdate=true; }
   initForge();
-  document.getElementById('phase-pill').className='forge';
-  document.getElementById('phase-pill').textContent='🔨 叩いて球にする';
-  document.getElementById('stage-name').textContent=stageName();
-  document.getElementById('hint').textContent='出っ張りを狙ってタップ';
-  document.getElementById('round-row').classList.remove('dim');
-  document.getElementById('shine-row').classList.add('dim');
-  document.getElementById('tools-title').textContent='TOOLS — 叩き道具';
-  document.getElementById('finale').className='';
-  lastToolSig='';
+  $('phase-pill').className='forge'; $('phase-pill').textContent='🔨 叩いて球にする';
+  $('hint').textContent='出っ張りをタップして叩く';
+  $('round-row').classList.remove('dim'); $('shine-row').classList.add('dim');
+  $('tools-title').textContent='TOOLS — 叩き道具';
+  $('finale').className=''; lastSig='';
   buildTools(); refreshUI();
 }
-document.getElementById('finale-btn').addEventListener('click',start);
+$('finale-btn').addEventListener('click', start);
 
-start();
-requestAnimationFrame(loop);
+// ── boot ──
+try {
+  initThree();
+  start();
+  requestAnimationFrame(animate);
+} catch(err){
+  $('loading').textContent='3D初期化エラー: '+err.message;
+  console.error(err);
+}
 </script>
 </body>
 </html>
