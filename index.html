@@ -251,6 +251,11 @@ const bc = document.getElementById('ball-canvas');
 const ctx = bc.getContext('2d');
 const CW=240, CH=240, CX=120, CY=120;
 let animT = 0;
+// インタラクティブ反応用の物理変数
+let pulse=0, pVel=0;     // squash & stretch（ぐにゃっと潰れて弾む）
+let spin=0, spinVel=0;   // ぐりぐり回転
+let tilt=0, tiltVel=0;   // 押した方向への傾き
+let dent=0, dentX=0, dentY=0; // クリック位置のへこみ
 
 // ──────────────────────────────────────────
 //  MORPH COMPUTE
@@ -614,6 +619,14 @@ function drawScene(){
   const morph=getMorph();
   ctx.clearRect(0,0,CW,CH);
 
+  // クリック反応の変形をボール全体に適用
+  const k=pulse*0.06;            // squash振幅
+  ctx.save();
+  ctx.translate(CX, CY - k*28);  // 弾む上下動
+  ctx.rotate(spin + tilt*0.22);  // 回転＋傾き
+  ctx.scale(1+k, 1-k);           // 横に膨らみ縦に潰れる
+  ctx.translate(-CX,-CY);
+
   if(morph<=0.40){
     // フラット〜くしゃっと段階
     const crT=morph/0.40;
@@ -626,6 +639,24 @@ function drawScene(){
     // 球体〜鏡面段階
     const pT=(morph-0.65)/0.35;
     drawSphere(pT);
+  }
+
+  ctx.restore();
+
+  // クリック位置のへこみ（押し込み感）
+  if(dent>0.01){
+    ctx.save();
+    const dg=ctx.createRadialGradient(dentX,dentY,0,dentX,dentY,28);
+    dg.addColorStop(0,`rgba(20,30,50,${dent*0.35})`);
+    dg.addColorStop(.6,`rgba(20,30,50,${dent*0.12})`);
+    dg.addColorStop(1,'rgba(20,30,50,0)');
+    ctx.fillStyle=dg;
+    ctx.beginPath(); ctx.arc(dentX,dentY,28,0,Math.PI*2); ctx.fill();
+    // へこみのフチに光
+    ctx.strokeStyle=`rgba(255,255,255,${dent*0.3})`;
+    ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(dentX,dentY,12,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
   }
 }
 
@@ -705,6 +736,11 @@ bw.addEventListener('pointerdown',e=>{
   const rect=bw.getBoundingClientRect();
   const ex=e.clientX-rect.left, ey=e.clientY-rect.top;
   S.bolt+=S.perTap; S.totalBolt+=S.perTap; S.taps++;
+  // ── インタラクティブ物理リアクション ──
+  pVel += 10;                                       // ぐにゃっと潰れる撃力
+  spinVel += (ex<CX?-1:1)*(3+Math.random()*2.5);    // クリック側へぐりぐり回転
+  tiltVel += (ex-CX)/CX * 5;                         // 押した方向へ傾く
+  dent=1; dentX=ex; dentY=ey;                        // へこみ発生
   playHit(); spawnSparks(ex,ey); spawnFloat(ex,ey,S.perTap);
   checkStage(); updateUI();
 });
@@ -818,7 +854,26 @@ function fmt(n){
 // ──────────────────────────────────────────
 let last=0;
 function loop(ts){
-  const dt=Math.min((ts-last)/1000,.1); last=ts; animT+=dt;
+  const dt=Math.min((ts-last)/1000,.05); last=ts; animT+=dt;
+
+  // ── squash & stretch バネ（潰れて弾む）──
+  pVel += (-pulse)*70*dt;
+  pVel *= Math.pow(0.0008, dt);
+  pulse += pVel*dt;
+
+  // ── 回転（摩擦で減衰）──
+  spin += spinVel*dt;
+  spinVel *= Math.pow(0.012, dt);
+  if(Math.abs(spinVel)<0.0004) spinVel=0;
+
+  // ── 傾き（バネで戻る）──
+  tiltVel += (-tilt)*55*dt;
+  tiltVel *= Math.pow(0.0015, dt);
+  tilt += tiltVel*dt;
+
+  // ── へこみフェード ──
+  dent += (0-dent)*Math.min(1,dt*7);
+
   drawScene();
   requestAnimationFrame(loop);
 }
