@@ -189,7 +189,9 @@ let dirs, disp, disp0Mean, vertCount, flatX, flatY, flatZ, targetDisp;
 let roughCanvas, roughCtx, roughTex, sampleCanvas, sampleCtx;
 const raycaster=new THREE.Raycaster();
 const ndc=new THREE.Vector2();
-let punch=0, spinKick=0;            // 叩き反応
+let punch=0;                        // 叩き反応(squash)
+let rotVelX=0, rotVelY=0;           // 回転の慣性（くるくる）
+let grabbed=false, dragging=false, lastPX=0, lastPY=0;
 const SEG=112, RBASE=1;
 
 function initThree(){
@@ -357,7 +359,7 @@ function crumpleStep(vx,vy){
   }
   G.pts+=3;
   applyCrumpleShape();
-  punch=1; spinKick+=(Math.random()*2-1)*0.4;
+  punch=1; rotVelY+=(Math.random()*2-1)*0.018;
   sfxCrinkle();
   fxSparks(vx,vy,['#c9d2db','#aeb8c2','#e8eef4'],6);
   fxText(vx,vy,'くしゃっ','#cbd6e2');
@@ -371,7 +373,7 @@ function enterForge(){
   applyShape(); applyColors(); recalcRound();
   banner('叩いて真球へ',' FORGE PHASE ');
   $('phase-pill').className='forge'; $('phase-pill').textContent='🔨 叩いて球にする';
-  $('hint').textContent='出っ張りをタップして叩く';
+  $('hint').textContent='タップで叩く / ドラッグで回す';
   $('round-ico').textContent='⚪'; $('round-lbl').textContent='真球度'; $('round-goal').style.left='85%';
   refreshUI();
 }
@@ -414,7 +416,7 @@ function hammerLocal(ldir, screenX, screenY){
   G.hits++;
   G.pts+=Math.max(1, Math.ceil(removed*900));
   // 反応
-  punch=1; spinKick+=(Math.random()*2-1)*0.5;
+  punch=1; rotVelY+=(Math.random()*2-1)*0.022;
   const hit=removed>0.002;
   sfxHammer(hit);
   if(hit){ fxText(screenX,screenY,'カンッ!','#ffd89a'); fxRing(screenX,screenY,'rgba(255,180,90,.85)'); fxSparks(screenX,screenY,['#ffd8a0','#ffb060','#fff0d0'],10); }
@@ -489,7 +491,7 @@ function toPolish(){
   mat.needsUpdate=true;
   banner('磨きへ！',' POLISH PHASE ');
   $('phase-pill').className='polish'; $('phase-pill').textContent='✨ 磨いて鏡面にする';
-  $('hint').textContent='なでて磨く（ドラッグ）';
+  $('hint').textContent='タップで磨く / ドラッグで回す';
   $('round-row').classList.add('dim'); $('shine-row').classList.remove('dim');
   $('tools-title').textContent='TOOLS — 磨き道具';
   buildTools();
@@ -537,22 +539,32 @@ function rayHit(){
 }
 function viewXY(e){ const r=view.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
 
+const ROT=0.009; // ドラッグ感度
 view.addEventListener('pointerdown', e=>{
-  e.preventDefault(); initAudio(); pointerDown=true; moved=false;
-  downX=e.clientX; downY=e.clientY;
-  if(G.phase==='polish'){ doPolishAt(e); }
+  e.preventDefault(); initAudio();
+  pointerDown=true; moved=false; dragging=false; grabbed=true;
+  downX=e.clientX; downY=e.clientY; lastPX=e.clientX; lastPY=e.clientY;
+  rotVelX=0; rotVelY=0; // つかんだら慣性を止める
 });
 view.addEventListener('pointermove', e=>{
   if(!pointerDown) return;
-  if(Math.hypot(e.clientX-downX, e.clientY-downY)>4) moved=true;
-  if(G.phase==='polish') doPolishAt(e);
+  const dx=e.clientX-lastPX, dy=e.clientY-lastPY;
+  lastPX=e.clientX; lastPY=e.clientY;
+  if(Math.hypot(e.clientX-downX, e.clientY-downY)>5) dragging=true, moved=true;
+  if(dragging && ball){
+    // ドラッグで自由回転（くるくる）。離すと慣性が残る
+    ball.rotation.y += dx*ROT;
+    ball.rotation.x += dy*ROT;
+    rotVelY=dx*ROT; rotVelX=dy*ROT;
+  }
 });
 window.addEventListener('pointerup', e=>{
-  if(!pointerDown){ return; } pointerDown=false;
-  if(G.phase==='crumple' && !moved){
+  if(!pointerDown){ return; } pointerDown=false; grabbed=false;
+  if(dragging){ return; } // ドラッグ=回転だったので操作は出さない
+  // タップ＝各フェーズの操作
+  if(G.phase==='crumple'){
     const [vx,vy]=viewXY(e); crumpleStep(vx,vy);
-  }
-  else if(G.phase==='forge' && !moved){
+  } else if(G.phase==='forge'){
     setNdc(e); const h=rayHit();
     if(h){
       _lp.copy(h.point); ball.worldToLocal(_lp); _lp.normalize();
@@ -560,9 +572,11 @@ window.addEventListener('pointerup', e=>{
       hammerLocal(_lp, vx, vy);
       if(G.twin){ const j=_lp.clone(); j.x+=(Math.random()*.1-.05); j.y+=(Math.random()*.1-.05); j.normalize(); setTimeout(()=>{ if(G.phase==='forge') hammerLocal(j,vx+8,vy-6); },90); }
     }
+  } else if(G.phase==='polish'){
+    doPolishAt(e);
   }
 });
-view.addEventListener('pointercancel',()=>pointerDown=false);
+view.addEventListener('pointercancel',()=>{ pointerDown=false; grabbed=false; });
 
 function doPolishAt(e){
   setNdc(e); const h=rayHit();
@@ -714,17 +728,17 @@ function fmt(n){ if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return(n/1e3)
 let lastT=performance.now();
 function animate(now){
   const dt=Math.min((now-lastT)/1000,.05); lastT=now;
-  // 自動回転（全方向を見せる）＋叩き反応
+  // ドラッグで自由回転（くるくる）。離すと慣性 → ゆるやかなアイドル回転
   if(ball){
-    if(G.phase==='crumple'){
-      // 平面〜丸めフェーズ：シートを見せるため正面付近で軽く揺らす
-      ball.rotation.y = Math.sin(now*0.0004)*0.32 + spinKick*0.3;
-      ball.rotation.x = 0.12 + Math.sin(now*0.00033)*0.08;
-    } else {
-      ball.rotation.y += dt*(G.phase==='done'?0.5:0.3) + spinKick*dt*4;
-      ball.rotation.x = Math.sin(now*0.0003)*0.12;
+    if(!grabbed){
+      ball.rotation.y += rotVelY + 0.0016;  // 慣性＋わずかなアイドル回転
+      ball.rotation.x += rotVelX;
+      rotVelX*=Math.pow(0.06,dt); rotVelY*=Math.pow(0.06,dt);
+      if(Math.abs(rotVelX)<1e-4) rotVelX=0;
+      if(Math.abs(rotVelY)<1e-4) rotVelY=0;
+      // 上下の回転は見やすい範囲に緩く制限
+      ball.rotation.x=clamp(ball.rotation.x,-1.2,1.2);
     }
-    spinKick*=Math.pow(0.02,dt);
     const sq=1-punch*0.06;
     ball.scale.set(1+punch*0.04, sq, 1+punch*0.04);
     punch*=Math.pow(0.0005,dt);
@@ -741,7 +755,7 @@ function start(){
   if(mat){ mat.vertexColors=true; mat.color.set(0xffffff); mat.metalness=0.62; mat.roughness=0.5; mat.roughnessMap=null; mat.envMapIntensity=1.1; mat.needsUpdate=true; }
   initCrumple();
   $('phase-pill').className='crumple'; $('phase-pill').textContent='🤏 平面を丸める';
-  $('hint').textContent='タップして紙を丸める';
+  $('hint').textContent='タップで丸める / ドラッグで回す';
   $('round-ico').textContent='🤏'; $('round-lbl').textContent='丸まり'; $('round-goal').style.left='100%';
   $('round-row').classList.remove('dim'); $('shine-row').classList.add('dim');
   $('tools-title').textContent='TOOLS';
